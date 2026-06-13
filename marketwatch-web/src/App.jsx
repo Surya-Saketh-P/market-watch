@@ -271,7 +271,7 @@ function App() {
 
   if (!isLoggedIn) {
     return (
-      <div data-theme={theme} style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)' }}>
+      <div className={`theme-${theme}`} style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)' }}>
         <div className="animate-slide-up finance-panel" style={{ width: '400px' }}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
             <div style={{ background: 'rgba(0, 230, 118, 0.1)', padding: '15px', borderRadius: '16px', border: '1px solid rgba(0, 230, 118, 0.3)' }}>
@@ -316,7 +316,7 @@ function App() {
 
   if (!isOnboarded) {
     return (
-      <div data-theme={theme} style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)' }}>
+      <div className={`theme-${theme}`} style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)' }}>
         <div className="animate-slide-up finance-panel" style={{ width: '400px' }}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
             <div style={{ background: 'rgba(0, 230, 118, 0.1)', padding: '15px', borderRadius: '16px', border: '1px solid rgba(0, 230, 118, 0.3)' }}>
@@ -344,7 +344,7 @@ function App() {
   }
 
   return (
-    <div className="dashboard-layout" data-theme={theme}>
+    <div className={`dashboard-layout theme-${theme}`}>
       {/* Sidebar */}
       <div className="sidebar">
         <div className="sidebar-logo">

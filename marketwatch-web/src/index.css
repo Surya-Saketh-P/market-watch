@@ -16,7 +16,7 @@
   --shadow: none;
 }
 
-:root[data-theme='light'], [data-theme='light'] {
+.theme-light {
   --bg-primary: #f4f7f6;
   --panel-bg: #ffffff;
   --panel-border: #e5e7eb;
