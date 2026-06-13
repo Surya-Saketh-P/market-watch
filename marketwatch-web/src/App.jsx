@@ -91,6 +91,7 @@ function App() {
   }, [lastScanned]);
 
   const [loadingStep, setLoadingStep] = useState(0);
+  const [terminalLogs, setTerminalLogs] = useState([]);
   const [showAllSources, setShowAllSources] = useState(false);
 
   const [activeView, setActiveView] = useState('dashboard');
@@ -276,20 +277,29 @@ function App() {
     setData(null);
     setShowAllSources(false);
     
-    const statuses = [
-      'Initializing Swarm Protocol...',
-      'Marketing Agent scanning web for competitor ad campaigns...',
-      'Product Agent fetching live dark store inventory nodes...',
-      'Sales Agent analyzing B2B buying signal velocity...',
-      'Data Scientist AI cross-referencing json intelligence...',
-      'Chief Strategic Advisor AI synthesizing final executive brief...'
+    const baseLogs = [
+      "Establishing secure connection to OpenRouter API...",
+      "Resolving competitor target DNS and tracing subdomains...",
+      "Bypassing generic anti-bot protections on target properties...",
+      "Extracting raw HTML layout and scanning for pricing nodes...",
+      "Fetching SEC filings and recent press releases via DuckDuckGo...",
+      "Identifying ad campaigns from search engine payload metadata...",
+      "Cross-referencing feature matrices against your core product...",
+      "Synthesizing threat intelligence vectors with gpt-4o-mini...",
+      "Compiling final strategy graph. Awaiting neural clear..."
     ];
-    let step = 0;
-    setLoadingStep(0);
+    setTerminalLogs([`[${new Date().toLocaleTimeString()}] Initializing Swarm Protocol...`]);
+    let logCount = 0;
     const statusInterval = setInterval(() => {
-       step++;
-       if (step < statuses.length) setLoadingStep(step);
-    }, 3000);
+       logCount++;
+       const timeStr = new Date().toLocaleTimeString();
+       if (logCount < baseLogs.length) {
+         setTerminalLogs(prev => [...prev, `[${timeStr}] ${baseLogs[logCount]}`]);
+       } else {
+         const randomHex = Math.floor(Math.random()*16777215).toString(16).padStart(6, '0').toUpperCase();
+         setTerminalLogs(prev => [...prev, `[${timeStr}] Processing block 0x${randomHex}... OK`]);
+       }
+    }, 800);
 
     try {
       const res = await fetch('http://localhost:8000/analyze', {
@@ -321,7 +331,7 @@ function App() {
     } finally {
       clearInterval(statusInterval);
       setLoading(false);
-      setLoadingStep(0);
+      setTerminalLogs([]);
     }
   };
 
@@ -618,41 +628,22 @@ function App() {
 
             {/* Live Agent Terminal / Executive Brief */}
             {loading && (
-              <div className="bankio-panel animate-slide-up" style={{ padding: '30px' }}>
-                 <h3 style={{ margin: '0 0 20px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                   <RefreshCw size={20} className="spin-anim" color="var(--accent-green)" /> Swarm Execution in Progress
-                 </h3>
-                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                   {[
-                      'Initializing Swarm Protocol...',
-                      'Marketing Agent scanning web for competitor ad campaigns...',
-                      'Product Agent fetching live dark store inventory nodes...',
-                      'Sales Agent analyzing B2B buying signal velocity...',
-                      'Data Scientist AI cross-referencing json intelligence...',
-                      'Chief Strategic Advisor AI synthesizing final executive brief...'
-                   ].map((status, idx) => (
-                      <div key={idx} style={{ 
-                        display: 'flex', alignItems: 'center', gap: '15px', 
-                        opacity: idx <= loadingStep ? 1 : 0.3,
-                        color: idx === loadingStep ? 'var(--accent-green)' : 'var(--text-main)',
-                        transition: 'all 0.3s ease'
-                      }}>
-                         <div style={{ 
-                           width: '24px', height: '24px', borderRadius: '50%', 
-                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                           background: idx < loadingStep ? 'var(--accent-green)' : (idx === loadingStep ? 'transparent' : 'var(--input-bg)'),
-                           border: idx === loadingStep ? '2px solid var(--accent-green)' : '1px solid var(--panel-border)',
-                           color: idx < loadingStep ? '#fff' : 'var(--text-muted)'
-                         }}>
-                            {idx < loadingStep ? <CheckCircle2 size={14} color="#fff" /> : (idx === loadingStep ? <Activity size={12} color="var(--accent-green)" /> : idx + 1)}
-                         </div>
-                         <span style={{ fontSize: '14px', fontWeight: idx === loadingStep ? 'bold' : 'normal' }}>{status}</span>
+              <div className="bankio-panel animate-slide-up" style={{ padding: '0', overflow: 'hidden', background: '#0a0a0a', border: '1px solid #333' }}>
+                 <div style={{ background: '#111', padding: '10px 15px', borderBottom: '1px solid #333', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--accent-green)', fontFamily: 'monospace', fontSize: '13px' }}>
+                   <RefreshCw size={14} className="spin-anim" /> root@marketwatch-swarm:~
+                 </div>
+                 <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '8px', minHeight: '300px', maxHeight: '400px', overflowY: 'auto', fontFamily: '"Fira Code", monospace', fontSize: '12px' }}>
+                   {terminalLogs.map((log, idx) => (
+                      <div key={idx} style={{ color: idx === terminalLogs.length - 1 ? '#fff' : 'var(--accent-green)', opacity: idx === terminalLogs.length - 1 ? 1 : 0.8 }}>
+                         <span style={{ color: '#888', marginRight: '8px' }}>&gt;</span> {log}
                       </div>
                    ))}
+                   <div style={{ color: 'var(--accent-green)', animation: 'pulse 1s infinite' }}>_</div>
                  </div>
                  <style dangerouslySetInnerHTML={{__html: `
                     .spin-anim { animation: spin 2s linear infinite; }
                     @keyframes spin { 100% { transform: rotate(360deg); } }
+                    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
                  `}} />
               </div>
             )}
