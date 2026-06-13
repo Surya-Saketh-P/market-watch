@@ -116,7 +116,7 @@ function App() {
            <div style={{ background: 'var(--accent-green)', width: 60, height: 60, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', color: '#fff' }}>
              {isLoggedIn ? <Target size={28} /> : <Lock size={28} />}
            </div>
-           <h2 style={{ margin: '0 0 10px 0' }}>{isLoggedIn ? 'Target Setup' : 'Bankio Intelligence'}</h2>
+           <h2 style={{ margin: '0 0 10px 0' }}>{isLoggedIn ? 'Target Setup' : 'MarketWatch Intelligence'}</h2>
            <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '25px' }}>
              {isLoggedIn ? 'Enter your primary company to begin.' : 'Authenticate to access the dashboard.'}
            </p>
@@ -153,7 +153,7 @@ function App() {
            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
              <path d="M4 6H14L10 12H20L16 18H6L10 12H0L4 6Z" fill="var(--accent-green)"/>
            </svg>
-           Bankio
+           MarketWatch
         </div>
 
         <div className="sidebar-menu-title">Main Menu</div>
