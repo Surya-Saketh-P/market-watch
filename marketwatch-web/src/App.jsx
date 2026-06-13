@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Search, Mail, Bell, Home, BarChart2, List, TrendingUp, RefreshCw, CreditCard, Gift, Shield, Settings, HelpCircle, ArrowUpRight, ArrowDownRight, Download, Eye, ChevronDown, Lock, ChevronRight, CheckCircle2, XCircle, Sun, Moon, Activity, Database, Target, BrainCircuit, UploadCloud, FileText, LogOut } from 'lucide-react';
+import { Search, Mail, Bell, Home, BarChart2, List, TrendingUp, RefreshCw, CreditCard, Gift, Shield, Settings, HelpCircle, ArrowUpRight, ArrowDownRight, Download, Eye, EyeOff, ChevronDown, Lock, ChevronRight, CheckCircle2, XCircle, Sun, Moon, Activity, Database, Target, BrainCircuit, UploadCloud, FileText, LogOut } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend } from 'recharts';
 import { auth, db } from './firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
@@ -76,6 +76,7 @@ function App() {
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
 
@@ -216,7 +217,12 @@ function App() {
              {!isLoggedIn ? (
                <>
                  <input type="email" autoFocus value={email} onChange={e => setEmail(e.target.value)} placeholder="Email Address" className="finance-input" required />
-                 <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" className="finance-input" required />
+                 <div style={{ position: 'relative', width: '100%' }}>
+                   <input type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" className="finance-input" style={{ width: '100%', paddingRight: '40px', boxSizing: 'border-box' }} required />
+                   <div style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }} onClick={() => setShowPassword(!showPassword)}>
+                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                   </div>
+                 </div>
                  {errorMsg && <div style={{ color: 'var(--accent-red)', fontSize: '12px', marginTop: '-10px', paddingLeft: '5px' }}>{errorMsg}</div>}
                  <button type="submit" className="finance-btn">{isLoginMode ? 'Sign In' : 'Sign Up'} <ChevronRight size={18} /></button>
                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', cursor: 'pointer', marginTop: '10px' }} onClick={() => setIsLoginMode(!isLoginMode)}>
