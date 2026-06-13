@@ -1,4 +1,6 @@
+import asyncio
 from fastapi import FastAPI
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional
 from crewai import Agent, Task, Crew, Process
@@ -16,6 +18,20 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = FastAPI()
+
+global_logs = []
+
+@app.get("/stream_logs")
+async def stream_logs():
+    async def log_generator():
+        last_idx = 0
+        while True:
+            if last_idx < len(global_logs):
+                for log in global_logs[last_idx:]:
+                    yield f"data: {log}\n\n"
+                last_idx = len(global_logs)
+            await asyncio.sleep(0.5)
+    return StreamingResponse(log_generator(), media_type="text/event-stream")
 
 @app.get("/logo")
 def get_logo(name: str):
@@ -96,6 +112,8 @@ def validate_company(name: str):
 @tool("Live Web Search")
 def search_tool(query: str) -> str:
     """Searches the live internet for real-time information and data."""
+    global global_logs
+    global_logs.append(f"Executing Live DuckDuckGo Search: '{query}'...")
     try:
         results = DDGS().text(query, max_results=3)
         return "\n".join([f"Title: {r['title']}\nSnippet: {r['body']}" for r in results])
@@ -105,6 +123,8 @@ def search_tool(query: str) -> str:
 @tool("QuickCommerce API")
 def quick_commerce_api_tool(query: str) -> str:
     """Fetches real-time quick commerce data (BlinkIt, Zepto, Swiggy) in Bengaluru."""
+    global global_logs
+    global_logs.append(f"Querying QuickCommerce API nodes for inventory: '{query}'...")
     lat, lon = "12.9021", "77.6639"
     try:
         if query == "eta":
@@ -121,6 +141,8 @@ def quick_commerce_api_tool(query: str) -> str:
 @tool("Fake Store API")
 def fake_store_api_tool(query: str) -> str:
     """Fetches prototype e-commerce data like products, users, carts."""
+    global global_logs
+    global_logs.append(f"Fetching prototype FakeStore payloads for '{query}'...")
     try:
         res = requests.get("https://fakestoreapi.com/products?limit=5", timeout=3)
         if res.status_code == 200:
@@ -132,6 +154,8 @@ def fake_store_api_tool(query: str) -> str:
 @tool("Crawl4AI Web Scraper")
 def crawl4ai_scraper_tool(url: str) -> str:
     """Extracts clean LLM-friendly markdown text from any given URL using Crawl4AI principles."""
+    global global_logs
+    global_logs.append(f"Crawl4AI initiating deep scrape and stripping JS from: {url}")
     try:
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
         if not url.startswith('http'):
@@ -234,6 +258,10 @@ def live_monitor_market(request: MonitorRequest):
 
 @app.post("/analyze")
 def analyze_market_data(request: AnalysisRequest):
+    global global_logs
+    global_logs.clear()
+    global_logs.append(f"Initializing Swarm Protocol for {request.user_company}...")
+    
     comp_list = ", ".join(request.competitors)
     query_context = f"Our company is {request.user_company}. Our competitors are: {comp_list}."
     

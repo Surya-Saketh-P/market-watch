@@ -277,31 +277,16 @@ function App() {
     setData(null);
     setShowAllSources(false);
     
-    const baseLogs = [
-      "Establishing secure connection to OpenRouter API...",
-      "Resolving competitor target DNS and tracing subdomains...",
-      "Bypassing generic anti-bot protections on target properties...",
-      "Extracting raw HTML layout and scanning for pricing nodes...",
-      "Fetching SEC filings and recent press releases via DuckDuckGo...",
-      "Identifying ad campaigns from search engine payload metadata...",
-      "Cross-referencing feature matrices against your core product...",
-      "Synthesizing threat intelligence vectors with gpt-4o-mini...",
-      "Compiling final strategy graph. Awaiting neural clear..."
-    ];
-    setTerminalLogs([`[${new Date().toLocaleTimeString()}] Initializing Swarm Protocol...`]);
-    let logCount = 0;
-    const statusInterval = setInterval(() => {
-       logCount++;
-       const timeStr = new Date().toLocaleTimeString();
-       if (logCount < baseLogs.length) {
-         setTerminalLogs(prev => [...prev, `[${timeStr}] ${baseLogs[logCount]}`]);
-       } else {
-         const randomHex = Math.floor(Math.random()*16777215).toString(16).padStart(6, '0').toUpperCase();
-         setTerminalLogs(prev => [...prev, `[${timeStr}] Processing block 0x${randomHex}... OK`]);
-       }
-    }, 800);
-
+    let eventSource;
     try {
+      setTerminalLogs([`[${new Date().toLocaleTimeString()}] Establishing uplink...`]);
+      eventSource = new EventSource('http://localhost:8000/stream_logs');
+      eventSource.onmessage = (event) => {
+          const timeStr = new Date().toLocaleTimeString();
+          // Overwrite the array to only keep the latest line, satisfying the "disappear" requirement
+          setTerminalLogs([`[${timeStr}] ${event.data}`]);
+      };
+
       const res = await fetch('http://localhost:8000/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -329,7 +314,7 @@ function App() {
       console.error(err);
       alert('Failed to connect to the MarketWatch AI Backend. Please ensure the Python server is running.');
     } finally {
-      clearInterval(statusInterval);
+      if (eventSource) eventSource.close();
       setLoading(false);
       setTerminalLogs([]);
     }
@@ -632,12 +617,11 @@ function App() {
                  <div style={{ background: '#111', padding: '10px 15px', borderBottom: '1px solid #333', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--accent-green)', fontFamily: 'monospace', fontSize: '13px' }}>
                    <RefreshCw size={14} className="spin-anim" /> root@marketwatch-swarm:~
                  </div>
-                 <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '8px', minHeight: '300px', maxHeight: '400px', overflowY: 'auto', fontFamily: '"Fira Code", monospace', fontSize: '12px' }}>
-                   {terminalLogs.map((log, idx) => (
-                      <div key={idx} style={{ color: idx === terminalLogs.length - 1 ? '#fff' : 'var(--accent-green)', opacity: idx === terminalLogs.length - 1 ? 1 : 0.8 }}>
-                         <span style={{ color: '#888', marginRight: '8px' }}>&gt;</span> {log}
-                      </div>
-                   ))}
+                 <div style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: '8px', minHeight: '60px', fontFamily: '"Fira Code", monospace', fontSize: '13px' }}>
+                   <span style={{ color: '#888' }}>&gt;</span>
+                   <div style={{ color: 'var(--accent-green)', flex: 1 }}>
+                     {terminalLogs[0] || 'Awaiting swarm dispatch...'}
+                   </div>
                    <div style={{ color: 'var(--accent-green)', animation: 'pulse 1s infinite' }}>_</div>
                  </div>
                  <style dangerouslySetInnerHTML={{__html: `
