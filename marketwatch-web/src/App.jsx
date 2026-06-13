@@ -385,7 +385,7 @@ function App() {
            </div>
            <div className="metric-card glowing-bottom orange">
               <div className="metric-card-title">Tracked Targets</div>
-              <div className="metric-card-value">{competitors.length + 1}</div>
+              <div className="metric-card-value">{competitors.length}</div>
               <div className="metric-card-delta orange"><Activity size={12} /> Active nodes</div>
            </div>
            <div className="metric-card glowing-bottom green">
