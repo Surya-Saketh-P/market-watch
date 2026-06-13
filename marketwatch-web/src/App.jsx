@@ -353,7 +353,7 @@ function App() {
         {/* Top Header */}
         <div className="top-header">
            <div className="header-text">
-             <h1>Welcome, Agent!</h1>
+             <h1>Welcome, {currentUser?.email ? currentUser.email.split('@')[0].charAt(0).toUpperCase() + currentUser.email.split('@')[0].slice(1) : 'Agent'}!</h1>
              <p>Effortlessly manage your intelligence targets with real-time insights</p>
            </div>
            <div className="header-actions">
