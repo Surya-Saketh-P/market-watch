@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Send, Activity, BrainCircuit, Globe, Loader2, Database, TrendingUp, Users, Target, Briefcase, Plus, X, Command, AlertTriangle, ShieldCheck, Download, Terminal, BarChart2, Lock, User, Key, ChevronRight } from 'lucide-react';
-import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell } from 'recharts';
+import { Send, Activity, BrainCircuit, Globe, Loader2, Database, TrendingUp, Users, Target, Briefcase, Plus, X, Command, AlertTriangle, ShieldCheck, Download, Terminal, BarChart2, Lock, User, Key, ChevronRight, Home, Settings, Search, LogOut, ArrowUp } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend } from 'recharts';
 import './index.css';
 
 const CompanyLogo = ({ name, size = 24 }) => {
@@ -11,13 +11,10 @@ const CompanyLogo = ({ name, size = 24 }) => {
     if (!name) return;
     let isMounted = true;
     
-    // Check our new Universal Logo Fetcher endpoint!
     fetch(`http://localhost:8000/logo?name=${encodeURIComponent(name)}`)
       .then(res => res.json())
       .then(data => {
-        if (isMounted && data.url) {
-          setSrc(data.url);
-        }
+        if (isMounted && data.url) setSrc(data.url);
       })
       .catch(() => {
         if (isMounted) {
@@ -29,14 +26,14 @@ const CompanyLogo = ({ name, size = 24 }) => {
     return () => { isMounted = false; };
   }, [name]);
 
-  if (!src) return <div style={{width: size, height: size, borderRadius: '4px', border: '1px solid #1e293b', backgroundColor: '#0f172a'}} />;
+  if (!src) return <div style={{width: size, height: size, borderRadius: '6px', border: '1px solid var(--panel-border)', backgroundColor: 'var(--panel-bg)'}} />;
 
   return (
     <img 
       src={src} 
       alt={name} 
-      onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0f172a&color=38bdf8&bold=true`}}
-      style={{ width: size, height: size, borderRadius: '4px', border: '1px solid #1e293b', objectFit: 'contain', backgroundColor: '#0f172a' }}
+      onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=13151b&color=00e676&bold=true`}}
+      style={{ width: size, height: size, borderRadius: '6px', border: '1px solid var(--panel-border)', objectFit: 'contain', backgroundColor: 'var(--panel-bg)' }}
     />
   );
 };
@@ -57,7 +54,6 @@ function App() {
   const [data, setData] = useState(null);
   const [activeTab, setActiveTab] = useState('strategy');
   
-  // Terminal Logs State
   const [logs, setLogs] = useState([]);
   const logsEndRef = useRef(null);
 
@@ -72,6 +68,12 @@ function App() {
     }
   }, []);
 
+  useEffect(() => {
+    if (logsEndRef.current) {
+      logsEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [logs]);
+
   const handleLogin = (e) => {
     e.preventDefault();
     if (!authEmail || !authPass) return;
@@ -82,12 +84,6 @@ function App() {
       setAuthLoading(false);
     }, 1200);
   };
-
-  useEffect(() => {
-    if (logsEndRef.current) {
-      logsEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [logs]);
 
   const handleOnboard = (e) => {
     e.preventDefault();
@@ -193,38 +189,55 @@ function App() {
     if (!data) return null;
     let graphData = null;
     let title = "";
+    let isOrange = false;
     
     if (activeTab === 'marketing' && data.marketing_graph) {
       graphData = data.marketing_graph;
-      title = "Ad Spend Efficiency";
+      title = "Ad Spend Efficiency Tracker";
+      isOrange = true;
     } else if (activeTab === 'product' && data.product_graph) {
       graphData = data.product_graph;
-      title = "Feature Sentiment Score";
+      title = "Feature Sentiment Trajectory";
     } else if (activeTab === 'sales' && data.sales_graph) {
       graphData = data.sales_graph;
-      title = "Lead Conversion Probability";
+      title = "Lead Conversion Velocity";
+      isOrange = true;
     }
 
     if (!graphData || graphData.length === 0) return null;
 
     return (
-      <div className="animate-slide-up" style={{ marginBottom: '30px', background: 'rgba(15, 23, 42, 0.4)', padding: '20px', borderRadius: '8px', border: '1px solid #1e293b' }}>
-        <h3 style={{ margin: '0 0 15px 0', fontSize: '13px', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <BarChart2 size={16} /> {title}
-        </h3>
-        <div style={{ height: '220px', width: '100%' }}>
+      <div className="chart-panel animate-slide-up">
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+           <div>
+             <div style={{ color: 'var(--text-main)', fontWeight: '600', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+               {title}
+             </div>
+             <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '4px' }}>Chart of metric scores across tracked targets • 14 days</div>
+           </div>
+           <div style={{ color: isOrange ? 'var(--accent-orange)' : 'var(--accent-green)', fontSize: '13px', fontWeight: 'bold' }}>
+              AVG +5.29%
+           </div>
+        </div>
+        <div style={{ height: '280px', width: '100%' }}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={graphData} layout="vertical" margin={{ top: 0, right: 30, left: 20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" horizontal={false} />
-              <XAxis type="number" domain={[0, 100]} tick={{fill: '#64748b', fontSize: 11}} axisLine={false} tickLine={false} />
-              <YAxis dataKey="name" type="category" tick={{fill: '#e2e8f0', fontSize: 11, fontWeight: 600}} axisLine={false} tickLine={false} width={80} />
-              <RechartsTooltip contentStyle={{backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '6px', color: '#fff'}} itemStyle={{color: '#38bdf8'}} cursor={{fill: '#1e293b'}} />
-              <Bar dataKey="score" radius={[0, 4, 4, 0]} barSize={20}>
-                {graphData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.name === userCompany ? '#38bdf8' : '#a855f7'} />
-                ))}
-              </Bar>
-            </BarChart>
+            <AreaChart data={graphData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorScoreGreen" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--accent-green)" stopOpacity={0.4}/>
+                  <stop offset="95%" stopColor="var(--accent-green)" stopOpacity={0}/>
+                </linearGradient>
+                <linearGradient id="colorScoreOrange" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--accent-orange)" stopOpacity={0.4}/>
+                  <stop offset="95%" stopColor="var(--accent-orange)" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--panel-border)" vertical={false} />
+              <XAxis dataKey="name" tick={{fill: 'var(--text-muted)', fontSize: 11}} axisLine={false} tickLine={false} />
+              <YAxis domain={[0, 100]} tick={{fill: 'var(--text-muted)', fontSize: 11}} axisLine={false} tickLine={false} />
+              <RechartsTooltip contentStyle={{backgroundColor: 'var(--panel-bg)', border: '1px solid var(--panel-border)', borderRadius: '8px', color: 'var(--text-main)'}} itemStyle={{color: isOrange ? 'var(--accent-orange)' : 'var(--accent-green)'}} />
+              <Area type="monotone" dataKey="score" stroke={isOrange ? 'var(--accent-orange)' : 'var(--accent-green)'} strokeWidth={3} fillOpacity={1} fill={isOrange ? "url(#colorScoreOrange)" : "url(#colorScoreGreen)"} />
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       </div>
@@ -234,40 +247,40 @@ function App() {
   if (!isLoggedIn) {
     return (
       <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="animate-slide-up cyber-panel" style={{ width: '400px' }}>
+        <div className="animate-slide-up finance-panel" style={{ width: '400px' }}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-            <div style={{ background: 'rgba(168, 85, 247, 0.1)', padding: '15px', borderRadius: '16px', border: '1px solid rgba(168, 85, 247, 0.3)' }}>
-              <Lock color="#a855f7" size={40} />
+            <div style={{ background: 'rgba(0, 230, 118, 0.1)', padding: '15px', borderRadius: '16px', border: '1px solid rgba(0, 230, 118, 0.3)' }}>
+              <Lock color="var(--accent-green)" size={40} />
             </div>
           </div>
-          <h1 style={{ textAlign: 'center', margin: '0 0 10px 0', fontSize: '24px', color: '#f8fafc', fontWeight: '800', letterSpacing: '1px' }}>RESTRICTED ACCESS</h1>
-          <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: '14px', marginBottom: '30px' }}>Authenticate to access MarketWatch Swarm Intelligence.</p>
+          <h1 style={{ textAlign: 'center', margin: '0 0 10px 0', fontSize: '24px', color: 'var(--text-main)', fontWeight: '800', letterSpacing: '1px' }}>RESTRICTED ACCESS</h1>
+          <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px', marginBottom: '30px' }}>Authenticate to access MarketWatch Swarm Intelligence.</p>
           
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
             <div style={{ position: 'relative' }}>
-              <User size={18} color="#64748b" style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)' }} />
+              <User size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)' }} />
               <input 
                 autoFocus
                 type="email"
                 value={authEmail}
                 onChange={(e) => setAuthEmail(e.target.value)}
                 placeholder="Agent Email ID"
-                className="cyber-input"
+                className="finance-input"
                 style={{ paddingLeft: '45px' }}
               />
             </div>
             <div style={{ position: 'relative' }}>
-              <Key size={18} color="#64748b" style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)' }} />
+              <Key size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)' }} />
               <input 
                 type="password"
                 value={authPass}
                 onChange={(e) => setAuthPass(e.target.value)}
                 placeholder="Passcode"
-                className="cyber-input"
+                className="finance-input"
                 style={{ paddingLeft: '45px' }}
               />
             </div>
-            <button type="submit" disabled={!authEmail || !authPass || authLoading} className="cyber-btn primary" style={{ padding: '14px', marginTop: '10px', display: 'flex', justifyContent: 'center', gap: '10px' }}>
+            <button type="submit" disabled={!authEmail || !authPass || authLoading} className="finance-btn primary" style={{ padding: '14px', marginTop: '10px', display: 'flex', justifyContent: 'center', gap: '10px' }}>
               {authLoading ? <Loader2 className="animate-spin" size={18} /> : <><ShieldCheck size={18} /> AUTHENTICATE</>}
             </button>
           </form>
@@ -279,25 +292,25 @@ function App() {
   if (!isOnboarded) {
     return (
       <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="animate-slide-up cyber-panel" style={{ width: '400px' }}>
+        <div className="animate-slide-up finance-panel" style={{ width: '400px' }}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-            <div style={{ background: 'rgba(56, 189, 248, 0.1)', padding: '15px', borderRadius: '16px', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
-              <Activity color="#38bdf8" size={40} />
+            <div style={{ background: 'rgba(0, 230, 118, 0.1)', padding: '15px', borderRadius: '16px', border: '1px solid rgba(0, 230, 118, 0.3)' }}>
+              <Activity color="var(--accent-green)" size={40} />
             </div>
           </div>
-          <h1 style={{ textAlign: 'center', margin: '0 0 10px 0', fontSize: '24px', color: '#f8fafc', fontWeight: '800' }}>MARKETWATCH NODE</h1>
-          <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: '14px', marginBottom: '30px' }}>Initialize global analytics core.</p>
+          <h1 style={{ textAlign: 'center', margin: '0 0 10px 0', fontSize: '24px', color: 'var(--text-main)', fontWeight: '800' }}>MARKETWATCH NODE</h1>
+          <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px', marginBottom: '30px' }}>Initialize global analytics core.</p>
           
           <form onSubmit={handleOnboard} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
             <input 
               autoFocus
               value={welcomeInput}
               onChange={(e) => setWelcomeInput(e.target.value)}
-              placeholder="Enter Company Name"
-              className="cyber-input"
+              placeholder="Enter Target Company (e.g. Blinkit)"
+              className="finance-input"
             />
-            <button type="submit" disabled={!welcomeInput.trim()} className="cyber-btn primary" style={{ padding: '14px' }}>
-              Initialize Database
+            <button type="submit" disabled={!welcomeInput.trim()} className="finance-btn primary" style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+              INITIALIZE <ChevronRight size={16} />
             </button>
           </form>
         </div>
@@ -305,202 +318,209 @@ function App() {
     );
   }
 
-  const ThreatWidget = ({ level }) => {
-    const isCritical = level === 'Critical';
-    const isMod = level === 'Moderate';
-    const color = isCritical ? '#ef4444' : (isMod ? '#eab308' : '#22c55e');
-    const Icon = isCritical ? AlertTriangle : (isMod ? Activity : ShieldCheck);
-    
-    return (
-      <div style={{ background: `rgba(${isCritical ? '239,68,68' : (isMod ? '234,179,8' : '34,197,94')}, 0.1)`, border: `1px solid ${color}`, borderRadius: '8px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Icon color={color} size={20} />
-          <span style={{ color: '#e2e8f0', fontSize: '13px', fontWeight: '600', textTransform: 'uppercase' }}>Detected Threat</span>
-        </div>
-        <div style={{ color: color, fontWeight: '800', fontSize: '15px', textTransform: 'uppercase', textShadow: `0 0 10px ${color}` }}>
-          {level}
-        </div>
-      </div>
-    );
-  };
-
   return (
-    <div style={{ width: '100%', maxWidth: '1400px', margin: '0 auto', padding: '30px 20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      
-      {/* HEADER */}
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1e293b', paddingBottom: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          <div style={{ background: 'rgba(56, 189, 248, 0.1)', padding: '10px', borderRadius: '10px', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
-            <Activity color="#38bdf8" size={24} />
-          </div>
-          <div>
-            <h1 style={{ margin: 0, fontSize: '22px', fontWeight: '800', color: '#f8fafc', letterSpacing: '1px' }}>MARKETWATCH</h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-              <span className="cyber-badge">Core Active</span>
-              <CompanyLogo name={userCompany} size={14} />
-              <span style={{ color: '#e2e8f0', fontWeight: '700', fontSize: '13px' }}>{userCompany}</span>
-            </div>
-          </div>
+    <div className="dashboard-layout">
+      {/* Sidebar */}
+      <div className="sidebar">
+        <div className="sidebar-logo">
+          <Command size={24} color="var(--accent-green)" /> MarketWatch
         </div>
         
-        <div style={{ display: 'flex', gap: '15px' }}>
-          {data && (
-            <button onClick={downloadReport} className="cyber-btn" style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(168, 85, 247, 0.1)', borderColor: 'rgba(168, 85, 247, 0.4)', color: '#d8b4fe' }}>
-              <Download size={14} /> Export Report
-            </button>
-          )}
-          <button onClick={() => { localStorage.removeItem('marketwatch_userCompany'); setIsOnboarded(false); }} className="cyber-btn">
-            Reset Target
-          </button>
-          <button onClick={() => { localStorage.removeItem('marketwatch_isLoggedIn'); setIsLoggedIn(false); setAuthEmail(''); setAuthPass(''); }} className="cyber-btn" style={{ color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.3)' }}>
-            Disconnect
-          </button>
+        <div style={{ position: 'relative', marginBottom: '20px' }}>
+          <Search style={{ position: 'absolute', left: 10, top: 10 }} size={14} color="var(--text-muted)" />
+          <input placeholder="Search" className="finance-input" style={{ paddingLeft: '32px' }} />
         </div>
-      </header>
 
-      {/* MAIN DASHBOARD */}
-      <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: '25px', alignItems: 'start' }}>
+        <div className="sidebar-menu-title">General</div>
+        <div className="sidebar-item"><Home size={16} /> Home Page</div>
+        <div className="sidebar-item active">
+          <Activity size={16} /> Dashboard 
+          <span style={{ marginLeft: 'auto', background: 'var(--accent-green)', color: '#000', padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold' }}>• 3</span>
+        </div>
+        <div className="sidebar-item"><Database size={16} /> Database</div>
+        <div className="sidebar-item"><Briefcase size={16} /> Files</div>
         
-        {/* LEFT PANEL - COMMAND CENTER */}
-        <div className="cyber-panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: '#38bdf8', margin: 0, textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '700' }}>
-            <Command size={16} /> Targeting Matrix
-          </h2>
-          
-          <div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '15px' }}>
-              {competitors.map(comp => (
-                <div key={comp} className="animate-slide-up" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#0f172a', border: '1px solid #1e293b', color: '#e2e8f0', padding: '6px 12px', borderRadius: '4px', fontSize: '12px', fontWeight: '600' }}>
-                  <CompanyLogo name={comp} size={14} />
-                  {comp}
-                  <X size={14} style={{ cursor: 'pointer', color: '#64748b' }} onClick={() => removeCompetitor(comp)} />
-                </div>
-              ))}
-            </div>
+        <div className="sidebar-menu-title" style={{ marginTop: '30px' }}>Account</div>
+        <div className="sidebar-item"><Users size={16} /> Messages</div>
+        <div className="sidebar-item"><Settings size={16} /> Settings</div>
+        
+        <div style={{ marginTop: 'auto' }}>
+           <div style={{ background: 'rgba(0, 230, 118, 0.1)', padding: '15px', borderRadius: '8px', border: '1px solid rgba(0, 230, 118, 0.2)', fontSize: '12px' }}>
+              <div style={{ color: 'var(--text-main)', fontWeight: 'bold', marginBottom: '4px' }}>Pro License</div>
+              <div style={{ color: 'var(--text-muted)' }}>Unlimited live scraping credits</div>
+           </div>
+        </div>
+      </div>
 
-            <form onSubmit={handleAddCompetitor} style={{ display: 'flex', gap: '8px' }}>
-              <input 
-                value={compInput}
-                onChange={(e) => setCompInput(e.target.value)}
-                placeholder="Add competitor..."
-                className="cyber-input"
-                style={{ flex: 1 }}
-              />
-              <button type="submit" disabled={!compInput.trim()} className="cyber-btn primary" style={{ padding: '0 12px' }}>
-                <Plus size={16} color="#020617"/>
+      {/* Main Content Area */}
+      <div className="main-content">
+        <div className="header">
+           <div className="header-title">
+              <CompanyLogo name={userCompany} size={42} />
+              <div>
+                 <h1>Overview</h1>
+                 <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Track and Learn about your targets</span>
+              </div>
+           </div>
+           <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={() => { localStorage.removeItem('marketwatch_userCompany'); setIsOnboarded(false); }} className="finance-btn">
+                Reset Target
               </button>
-            </form>
-          </div>
-          
-          <button 
-            className="cyber-btn primary glow-btn"
-            onClick={handleDispatch}
-            disabled={loading || competitors.length === 0}
-            style={{ 
-              width: '100%', padding: '14px', 
-              display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px',
-              opacity: (loading || competitors.length === 0) ? 0.5 : 1, marginTop: '5px'
-            }}
-          >
-            {loading ? <><Loader2 className="animate-spin" size={16} /> Deploying Swarm...</> : <><Send size={16} /> Execute Hack</>}
-          </button>
-
-          {/* DYNAMIC RADAR CHART */}
-          {data && data.radar_data && data.radar_data.length > 0 && (
-            <div className="animate-slide-up" style={{ marginTop: '10px', borderTop: '1px solid #1e293b', paddingTop: '20px' }}>
-              <ThreatWidget level={data.threat_level || 'Moderate'} />
-              
-              <h3 style={{ fontSize: '13px', color: '#94a3b8', margin: '20px 0 10px 0', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Database size={14} /> Global Footprint
-              </h3>
-              <div style={{ height: '260px', width: '100%', margin: '0 -10px' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data.radar_data}>
-                    <PolarGrid stroke="#1e293b" />
-                    <PolarAngleAxis dataKey="subject" tick={{fill: '#94a3b8', fontSize: 10}} />
-                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                    <RechartsTooltip contentStyle={{backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '6px', color: '#fff'}} itemStyle={{color: '#38bdf8'}} />
-                    <Radar name={userCompany} dataKey="A" stroke="#38bdf8" fill="#38bdf8" fillOpacity={0.4} />
-                    <Radar name="Competitors" dataKey="B" stroke="#a855f7" fill="#a855f7" fillOpacity={0.4} />
-                    <Legend wrapperStyle={{fontSize: '12px', paddingTop: '10px'}} />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          )}
+              {data && (
+                 <button onClick={downloadReport} className="finance-btn"><Download size={14} /> Export Report</button>
+              )}
+              <button onClick={() => { localStorage.removeItem('marketwatch_isLoggedIn'); setIsLoggedIn(false); setAuthEmail(''); setAuthPass(''); }} className="finance-btn danger">
+                 <LogOut size={14} /> Disconnect
+              </button>
+           </div>
         </div>
 
-        {/* RIGHT PANEL - AGENT TABS & RESULTS */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          
-          {/* TABS */}
-          <div style={{ display: 'flex', background: 'rgba(15, 23, 42, 0.4)', borderRadius: '8px', border: '1px solid #1e293b', overflow: 'hidden' }}>
-            <button className={`cyber-tab ${activeTab === 'strategy' ? 'active' : ''}`} onClick={() => setActiveTab('strategy')} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-              <Target size={14} /> Strategy
-            </button>
-            <button className={`cyber-tab ${activeTab === 'marketing' ? 'active' : ''}`} onClick={() => setActiveTab('marketing')} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-              <Globe size={14} /> Marketing
-            </button>
-            <button className={`cyber-tab ${activeTab === 'product' ? 'active' : ''}`} onClick={() => setActiveTab('product')} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-              <Users size={14} /> Product
-            </button>
-            <button className={`cyber-tab ${activeTab === 'sales' ? 'active' : ''}`} onClick={() => setActiveTab('sales')} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-              <TrendingUp size={14} /> Sales
-            </button>
+        <div className="metrics-grid">
+           <div className="metric-card glowing-bottom green">
+              <div className="metric-card-title">Threat Level</div>
+              <div className="metric-card-value" style={{ color: data ? (data.threat_level === 'Critical' ? '#ef4444' : 'var(--accent-green)') : 'var(--text-main)' }}>
+                 {data ? data.threat_level : 'Scanning'}
+              </div>
+              <div className="metric-card-delta green"><ArrowUp size={12} /> Live API Status</div>
+           </div>
+           <div className="metric-card glowing-bottom orange">
+              <div className="metric-card-title">Tracked Targets</div>
+              <div className="metric-card-value">{competitors.length + 1}</div>
+              <div className="metric-card-delta orange"><Activity size={12} /> Active nodes</div>
+           </div>
+           <div className="metric-card glowing-bottom green">
+              <div className="metric-card-title">Data Points (24h)</div>
+              <div className="metric-card-value">14,290</div>
+              <div className="metric-card-delta green"><ArrowUp size={12} /> +12.5% From yesterday</div>
+           </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '25px', marginBottom: '25px' }}>
+          {/* Main Charts & Tabs */}
+          <div>
+             <div className="finance-panel" style={{ marginBottom: '25px', padding: '15px 24px' }}>
+                 <div style={{ display: 'flex', gap: '20px', borderBottom: '1px solid var(--panel-border)' }}>
+                   {['strategy', 'marketing', 'product', 'sales'].map(tab => (
+                     <button
+                       key={tab}
+                       onClick={() => setActiveTab(tab)}
+                       style={{ 
+                         background: 'none', border: 'none', padding: '12px 10px', 
+                         color: activeTab === tab ? 'var(--accent-green)' : 'var(--text-muted)',
+                         borderBottom: activeTab === tab ? '2px solid var(--accent-green)' : '2px solid transparent',
+                         fontWeight: '600', cursor: 'pointer', textTransform: 'capitalize',
+                         transition: 'all 0.2s', fontSize: '13px'
+                       }}
+                     >
+                       {tab} Intel
+                     </button>
+                   ))}
+                 </div>
+
+                 {/* Targeting & Inputs Matrix */}
+                 <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      <span className="target-tag" style={{ background: 'rgba(0,230,118,0.1)', borderColor: 'var(--accent-green)', color: 'var(--accent-green)' }}>
+                        <Target size={12} /> {userCompany}
+                      </span>
+                      {competitors.map(c => (
+                        <span key={c} className="target-tag">
+                          {c} <X size={12} style={{ cursor: 'pointer', color: '#ef4444' }} onClick={() => removeCompetitor(c)} />
+                        </span>
+                      ))}
+                    </div>
+                    
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                       <input 
+                         value={compInput}
+                         onChange={(e) => setCompInput(e.target.value)}
+                         placeholder="Add Competitor (e.g. Zepto)"
+                         className="finance-input"
+                         onKeyPress={(e) => e.key === 'Enter' && handleAddCompetitor(e)}
+                       />
+                       <button onClick={handleAddCompetitor} className="finance-btn"><Plus size={16} /> Add</button>
+                       <button onClick={handleDispatch} disabled={loading} className="finance-btn primary" style={{ width: '180px' }}>
+                         {loading ? <Loader2 className="animate-spin" size={16} /> : <><BrainCircuit size={16} /> Run Analysis</>}
+                       </button>
+                    </div>
+                 </div>
+             </div>
+
+             {/* Dynamic Content */}
+             {data ? (
+                <>
+                  {getActiveGraph()}
+                  <div className="finance-panel animate-slide-up" style={{ minHeight: '300px' }}>
+                    <h3 style={{ margin: '0 0 15px 0', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Activity size={16} color="var(--accent-green)" /> Detailed Brief
+                    </h3>
+                    <div style={{ lineHeight: '1.7', color: 'var(--text-muted)', fontSize: '14px' }}>
+                      <ReactMarkdown>{getActiveData()}</ReactMarkdown>
+                    </div>
+                  </div>
+                </>
+             ) : (
+                <div className="finance-panel" style={{ height: '300px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderStyle: 'dashed' }}>
+                   <Database size={48} color="var(--panel-border)" style={{ marginBottom: '15px' }} />
+                   <div style={{ color: 'var(--text-muted)', fontWeight: '500' }}>Awaiting Swarm Dispatch...</div>
+                </div>
+             )}
           </div>
 
-          {/* RESULTS DISPLAY OR LIVE TERMINAL */}
-          <div className="cyber-panel" style={{ minHeight: '550px', position: 'relative' }}>
-            
-            {loading && (
-              <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', borderBottom: '1px solid #1e293b', paddingBottom: '15px', marginBottom: '15px' }}>
-                  <Terminal size={18} color="#a855f7" />
-                  <span style={{ color: '#a855f7', fontWeight: '700', fontSize: '14px', letterSpacing: '1px' }}>LIVE SWARM TELEMETRY</span>
-                  <Loader2 size={16} color="#a855f7" className="animate-spin" style={{ marginLeft: 'auto' }} />
-                </div>
-                
-                {/* Scrolling Terminal */}
-                <div style={{ flex: 1, background: '#020617', borderRadius: '6px', padding: '15px', fontFamily: 'monospace', fontSize: '13px', overflowY: 'auto', border: '1px solid #1e293b', maxHeight: '400px' }}>
-                  {logs.map((log, idx) => (
-                    <div key={idx} className="animate-terminal" style={{ marginBottom: '8px', color: log.text.includes('ERROR') ? '#ef4444' : (log.text.includes('COMPLETE') ? '#22c55e' : '#38bdf8') }}>
-                      <span style={{ color: '#64748b', marginRight: '10px' }}>[{log.time}]</span>
-                      {log.text}
-                    </div>
-                  ))}
-                  <div ref={logsEndRef} />
-                </div>
-              </div>
-            )}
+          {/* Right Panel: Radar & Terminal */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+             {/* Radar Chart */}
+             <div className="finance-panel">
+               <h3 style={{ margin: '0 0 15px 0', fontSize: '14px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Swarm Radar</h3>
+               <div style={{ height: '220px', position: 'relative' }}>
+                 {!data && (
+                   <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '12px' }}>No Data</div>
+                 )}
+                 {data && data.radar_data && (
+                   <ResponsiveContainer width="100%" height="100%">
+                     <RadarChart data={data.radar_data}>
+                       <PolarGrid stroke="var(--panel-border)" />
+                       <PolarAngleAxis dataKey="metric" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} />
+                       <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                       <RechartsTooltip contentStyle={{backgroundColor: 'var(--panel-bg)', border: '1px solid var(--panel-border)', borderRadius: '8px'}} />
+                       <Radar name={userCompany} dataKey={userCompany} stroke="var(--accent-green)" fill="var(--accent-green)" fillOpacity={0.4} />
+                       {competitors.map((comp, idx) => (
+                         <Radar key={comp} name={comp} dataKey={comp} stroke="var(--accent-orange)" fill="var(--accent-orange)" fillOpacity={0.3} />
+                       ))}
+                     </RadarChart>
+                   </ResponsiveContainer>
+                 )}
+               </div>
+             </div>
 
-            {error && (
-              <div style={{ padding: '20px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.4)', borderRadius: '8px', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '600' }}>
-                <AlertTriangle size={20} /> System Failure: {error}
-              </div>
-            )}
-
-            {!loading && !error && data && (
-              <div className="animate-slide-up">
-                {/* RENDER THE AGENT SPECIFIC GRAPH */}
-                {getActiveGraph()}
-
-                {/* RENDER THE AGENT MARKDOWN TEXT */}
-                <div className="prose">
-                  <ReactMarkdown>{getActiveData()}</ReactMarkdown>
-                </div>
-              </div>
-            )}
-
-            {!loading && !error && !data && (
-              <div className="animate-slide-up" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '400px', color: '#475569', gap: '15px' }}>
-                <Briefcase size={50} strokeWidth={1} />
-                <div style={{ fontSize: '15px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px' }}>System Ready. Awaiting Execution.</div>
-              </div>
-            )}
+             {/* Terminal Logs */}
+             <div className="terminal-panel">
+               <div style={{ color: '#f8fafc', fontWeight: 'bold', marginBottom: '10px', fontSize: '11px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                 <Terminal size={12} color="var(--accent-green)" /> Activity Logs
+               </div>
+               {logs.length === 0 ? (
+                 <div style={{ opacity: 0.5 }}>No active processes. Standing by.</div>
+               ) : (
+                 logs.map((log, i) => {
+                   const isError = log.text.includes('ERROR');
+                   const isComplete = log.text.includes('COMPLETE');
+                   const isApi = log.text.includes('API HIT');
+                   return (
+                     <div key={i} className="terminal-line animate-slide-up" style={{ 
+                       borderLeftColor: isError ? '#ef4444' : (isComplete ? 'var(--accent-green)' : (isApi ? 'var(--accent-orange)' : 'var(--panel-border)')),
+                       color: isError ? '#ef4444' : (isComplete ? 'var(--accent-green)' : 'var(--text-muted)')
+                     }}>
+                       <span style={{ color: '#475569', marginRight: '8px' }}>[{log.time}]</span>
+                       {log.text}
+                     </div>
+                   );
+                 })
+               )}
+               <div ref={logsEndRef} />
+             </div>
           </div>
         </div>
       </div>
-      
     </div>
   );
 }
