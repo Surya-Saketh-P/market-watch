@@ -46,7 +46,7 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isOnboarded, setIsOnboarded] = useState(false);
   const [userCompany, setUserCompany] = useState('');
-  const [competitors, setCompetitors] = useState(['Blinkit', 'Zepto']);
+  const [competitors, setCompetitors] = useState([]);
   const [compInput, setCompInput] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [isValidating, setIsValidating] = useState(false);
