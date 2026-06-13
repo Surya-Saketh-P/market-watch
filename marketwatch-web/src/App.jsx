@@ -357,7 +357,7 @@ function App() {
   }
 
   return (
-    <div className={`dashboard-layout theme-${theme}`}>
+    <div className={`dashboard-layout theme-${theme} ${isMonitoring ? 'radar-scanning' : ''}`}>
       {/* Sidebar - Dynamically routing to agents */}
       <div className="sidebar">
         <div className="sidebar-logo">
