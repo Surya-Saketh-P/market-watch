@@ -85,26 +85,9 @@ function App() {
     }, 800);
   };
 
-  const validCompanies = [
-    "blinkit", "zepto", "swiggy", "instamart", "dunzo", "bigbasket", "bbnow", "bb now",
-    "flipkart", "amazon", "jiomart", "tata neu", "tataneu", "meesho", "nykaa", "myntra",
-    "ajio", "firstcry", "lenskart", "snapdeal", "shopclues", "indiamart", "udaan",
-    "shiprocket", "delhivery", "xpressbees", "ecom express", "zomato", "grofers", "amazon fresh"
-  ];
-
-  const isValidCompany = (name) => {
-    const comp = name.toLowerCase().trim();
-    return validCompanies.some(v => comp.includes(v) || v.includes(comp));
-  };
-
   const handleOnboard = (e) => {
     e.preventDefault();
     if (!userCompany.trim()) return;
-    
-    if (!isValidCompany(userCompany)) {
-      setErrorMsg('Invalid company. Please enter a verified Quick Commerce/E-Commerce brand.');
-      return;
-    }
     
     setErrorMsg('');
     localStorage.setItem('marketwatch_userCompany', userCompany.trim());
@@ -256,10 +239,6 @@ function App() {
                />
                <button onClick={() => { 
                  if(compInput) { 
-                   if (!isValidCompany(compInput)) {
-                      alert("Invalid company! Please enter a verified Quick Commerce/E-Commerce brand.");
-                      return;
-                   }
                    setCompetitors([...competitors, compInput]); 
                    setCompInput(''); 
                  } 
@@ -319,10 +298,12 @@ function App() {
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                      <div style={{ padding: '8px 12px', background: 'var(--sidebar-active-bg)', color: 'var(--sidebar-active-text)', border: '1px solid var(--panel-border)', borderRadius: '8px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
                         <Target size={14} /> {userCompany} (Primary)
+                        {data?.sector_analysis?.[userCompany] && !data.sector_analysis[userCompany].toLowerCase().includes('commerce') && <span style={{ color: 'var(--accent-orange)', fontSize: '11px', marginLeft: '4px' }}>[{data.sector_analysis[userCompany]}]</span>}
                      </div>
                      {competitors.map((comp, idx) => (
                         <div key={idx} style={{ padding: '8px 12px', background: 'var(--input-bg)', border: '1px solid var(--panel-border)', borderRadius: '8px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                            <Target size={14} color="var(--accent-orange)" /> {comp}
+                           {data?.sector_analysis?.[comp] && !data.sector_analysis[comp].toLowerCase().includes('commerce') && <span style={{ color: 'var(--accent-orange)', fontSize: '11px', marginLeft: '4px' }}>[{data.sector_analysis[comp]}]</span>}
                            <XCircle 
                               size={14} 
                               color="var(--accent-red)" 
