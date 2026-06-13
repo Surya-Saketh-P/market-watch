@@ -85,6 +85,11 @@ function App() {
   const [historyData, setHistoryData] = useState([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  
+  const [isMonitoring, setIsMonitoring] = useState(false);
+  const [liveThreats, setLiveThreats] = useState([]);
+  const monitorIntervalRef = useRef(null);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   useEffect(() => {
     if (activeView === 'history' && currentUser) {
@@ -132,6 +137,36 @@ function App() {
 
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (isMonitoring && userCompany && competitors.length > 0) {
+      checkLiveThreats(); // Initial check
+      monitorIntervalRef.current = setInterval(checkLiveThreats, 30000); // Poll every 30s
+    } else {
+      if (monitorIntervalRef.current) clearInterval(monitorIntervalRef.current);
+    }
+    return () => {
+      if (monitorIntervalRef.current) clearInterval(monitorIntervalRef.current);
+    };
+  }, [isMonitoring, userCompany, competitors]);
+
+  const checkLiveThreats = async () => {
+    try {
+      const res = await fetch('http://localhost:8000/live_monitor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_company: userCompany, competitors: competitors })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.threat_detected) {
+          setLiveThreats(prev => [{ id: Date.now(), ...data }, ...prev].slice(0, 3));
+        }
+      }
+    } catch (err) {
+      console.error("Monitor error:", err);
+    }
+  };
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
@@ -388,12 +423,35 @@ function App() {
            </div>
         </div>
 
-        {/* Dashboard Actions */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-           <h2 style={{ margin: 0, fontSize: '20px' }}>
-             {activeView === 'dashboard' ? 'Intelligence Activity Overview' : `${activeView.charAt(0).toUpperCase() + activeView.slice(1)} Agent`}
-           </h2>
-            <div style={{ display: 'flex', gap: '10px' }}>
+         {/* THREAT ALERT BANNERS */}
+         {liveThreats.map(threat => (
+           <div key={threat.id} className="animate-slide-up" style={{ background: threat.threat_level === 'High' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(245, 158, 11, 0.1)', border: `1px solid ${threat.threat_level === 'High' ? 'var(--accent-red)' : 'var(--accent-orange)'}`, padding: '15px 20px', borderRadius: '8px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+               {threat.threat_level === 'High' ? <Target size={24} color="var(--accent-red)" style={{ animation: 'spin 2s linear infinite' }} /> : <Activity size={24} color="var(--accent-orange)" />}
+               <div>
+                 <div style={{ fontWeight: 'bold', color: 'var(--text-main)', fontSize: '15px' }}>{threat.threat_level} Threat Detected</div>
+                 <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{threat.message}</div>
+               </div>
+             </div>
+             <button onClick={() => setLiveThreats(prev => prev.filter(t => t.id !== threat.id))} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><XCircle size={18} /></button>
+           </div>
+         ))}
+
+         {/* Dashboard Actions */}
+         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h2 style={{ margin: 0, fontSize: '20px', display: 'flex', alignItems: 'center', gap: '15px' }}>
+              {activeView === 'dashboard' ? 'Intelligence Activity Overview' : `${activeView.charAt(0).toUpperCase() + activeView.slice(1)} Agent`}
+              {activeView === 'dashboard' && competitors.length > 0 && (
+                 <button 
+                   onClick={() => setIsMonitoring(!isMonitoring)}
+                   style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '4px 10px', borderRadius: '20px', background: isMonitoring ? 'rgba(34, 197, 94, 0.1)' : 'var(--input-bg)', border: `1px solid ${isMonitoring ? 'var(--accent-green)' : 'var(--panel-border)'}`, color: isMonitoring ? 'var(--accent-green)' : 'var(--text-muted)', cursor: 'pointer', outline: 'none', transition: 'all 0.2s ease' }}
+                 >
+                   <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: isMonitoring ? 'var(--accent-green)' : 'var(--text-muted)', boxShadow: isMonitoring ? '0 0 8px var(--accent-green)' : 'none', opacity: isMonitoring ? 1 : 0.5 }}></div>
+                   {isMonitoring ? 'Live Radar: ON' : 'Live Radar: OFF'}
+                 </button>
+              )}
+            </h2>
+             <div style={{ display: 'flex', gap: '10px' }}>
                <input 
                  value={compInput} 
                  onChange={e => setCompInput(e.target.value)} 

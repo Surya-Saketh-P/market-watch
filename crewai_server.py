@@ -11,6 +11,9 @@ import re
 import random
 import requests
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI()
 
@@ -159,13 +162,75 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-os.environ["OPENROUTER_API_KEY"] = os.environ.get("OPENROUTER_API_KEY", "YOUR_OPENROUTER_API_KEY_HERE")
+os.environ["OPENROUTER_API_KEY"] = os.getenv("OPENROUTER_API_KEY", "")
 llm_string = "openrouter/openai/gpt-4o-mini"
 
 class AnalysisRequest(BaseModel):
     user_company: str
     competitors: list[str]
     local_data: Optional[str] = None
+
+class MonitorRequest(BaseModel):
+    user_company: str
+    competitors: list[str]
+
+@app.post("/live_monitor")
+def live_monitor_market(request: MonitorRequest):
+    comp_list = ", ".join(request.competitors)
+    query = f"{comp_list} latest news announcements pricing 2026"
+    
+    # 1. Fetch live data via DDGS
+    search_data = ""
+    try:
+        results = DDGS().text(query, max_results=3)
+        if results:
+            search_data = "\n".join([f"Title: {r['title']}\nSnippet: {r['body']}" for r in results])
+        else:
+            search_data = "No recent news found."
+    except Exception as e:
+        search_data = f"Search failed: {e}"
+
+    # 2. Evaluate via OpenRouter
+    api_key = os.environ.get("OPENROUTER_API_KEY")
+    prompt = f"""
+    You are a real-time market threat detector.
+    User's Company: {request.user_company}
+    Competitors: {comp_list}
+
+    Here are the latest live web search snippets about the competitors:
+    {search_data}
+
+    Analyze this data and determine if there is an active, actionable threat (e.g., new feature, discount, acquisition, funding, or major news). If the search data is generic, threat_detected is false.
+    Respond ONLY with a raw JSON object (no markdown, no quotes):
+    {{
+        "threat_detected": true/false,
+        "threat_level": "High" / "Medium" / "Low" / "None",
+        "message": "A short 1-2 sentence description of the threat or status."
+    }}
+    """
+    
+    try:
+        res = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": "openai/gpt-4o-mini",
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.2
+            },
+            timeout=10
+        )
+        if res.status_code == 200:
+            content = res.json()["choices"][0]["message"]["content"]
+            content = content.replace("```json", "").replace("```", "").strip()
+            return json.loads(content)
+        else:
+            return {"threat_detected": False, "threat_level": "None", "message": f"API Error: {res.status_code}"}
+    except Exception as e:
+        return {"threat_detected": False, "threat_level": "None", "message": f"LLM Error: {e}"}
 
 @app.post("/analyze")
 def analyze_market_data(request: AnalysisRequest):
