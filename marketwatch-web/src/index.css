@@ -1,20 +1,40 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --bg-dark: #0b0e14;
+  /* Default Dark Mode */
+  --bg-primary: #0b0e14;
   --panel-bg: #13151b;
   --panel-border: #1e222d;
   --text-main: #ffffff;
   --text-muted: #808898;
   --accent-green: #00e676;
   --accent-orange: #ff9100;
-  --accent-purple: #8b5cf6;
+  --sidebar-hover: rgba(255, 255, 255, 0.03);
+  --sidebar-active-bg: rgba(0, 230, 118, 0.05);
+  --sidebar-active-text: #ffffff;
+  --input-bg: #1a1d26;
+  --shadow: none;
+}
+
+[data-theme='light'] {
+  --bg-primary: #f4f7f6;
+  --panel-bg: #ffffff;
+  --panel-border: #e5e7eb;
+  --text-main: #111827;
+  --text-muted: #6b7280;
+  --accent-green: #114b3e; /* Dark teal from Bankio */
+  --accent-orange: #ea580c;
+  --sidebar-hover: rgba(17, 75, 62, 0.05);
+  --sidebar-active-bg: #114b3e;
+  --sidebar-active-text: #ffffff;
+  --input-bg: #f9fafb;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;
-  background-color: var(--bg-dark);
+  background-color: var(--bg-primary);
   color: var(--text-main);
   overflow: hidden; /* Full dashboard view */
 }
@@ -32,7 +52,7 @@ body {
 /* Sidebar */
 .sidebar {
   width: 250px;
-  background-color: var(--bg-dark);
+  background-color: var(--panel-bg);
   border-right: 1px solid var(--panel-border);
   padding: 24px;
   display: flex;
@@ -72,15 +92,14 @@ body {
 }
 
 .sidebar-item:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--sidebar-hover);
   color: var(--text-main);
 }
 
 .sidebar-item.active {
-  background: rgba(0, 230, 118, 0.05);
-  color: var(--text-main);
-  border-left: 2px solid var(--accent-green);
-  border-radius: 0 8px 8px 0;
+  background: var(--sidebar-active-bg);
+  color: var(--sidebar-active-text);
+  border-radius: 8px;
 }
 
 /* Main Content */
@@ -110,7 +129,7 @@ body {
 }
 
 .finance-input {
-  background: #1a1d26;
+  background: var(--input-bg);
   border: 1px solid var(--panel-border);
   color: var(--text-main);
   padding: 10px 16px;
@@ -123,11 +142,11 @@ body {
 
 .finance-input:focus {
   border-color: var(--accent-green);
-  box-shadow: 0 0 0 1px rgba(0, 230, 118, 0.2);
+  box-shadow: 0 0 0 1px var(--accent-green);
 }
 
 .finance-btn {
-  background: #1a1d26;
+  background: var(--input-bg);
   border: 1px solid var(--panel-border);
   color: var(--text-main);
   padding: 10px 16px;
@@ -143,7 +162,7 @@ body {
 }
 
 .finance-btn:hover {
-  background: #232733;
+  background: var(--sidebar-hover);
 }
 
 .finance-btn.primary {
@@ -179,6 +198,7 @@ body {
   flex-direction: column;
   position: relative;
   overflow: hidden;
+  box-shadow: var(--shadow);
 }
 
 .metric-card-title {
@@ -229,10 +249,11 @@ body {
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 25px;
+  box-shadow: var(--shadow);
 }
 
 .terminal-panel {
-  background: #020617;
+  background: var(--bg-primary);
   border: 1px solid var(--panel-border);
   border-radius: 12px;
   padding: 16px;
@@ -241,6 +262,7 @@ body {
   color: var(--text-muted);
   height: 300px;
   overflow-y: auto;
+  box-shadow: var(--shadow);
 }
 
 .terminal-line {
@@ -267,6 +289,7 @@ body {
   border: 1px solid var(--panel-border);
   border-radius: 12px;
   padding: 24px;
+  box-shadow: var(--shadow);
 }
 
 /* Target Tags */
@@ -274,7 +297,7 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #1a1d26;
+  background: var(--input-bg);
   border: 1px solid var(--panel-border);
   color: var(--text-main);
   padding: 6px 12px;

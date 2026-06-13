@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Send, Activity, BrainCircuit, Globe, Loader2, Database, TrendingUp, Users, Target, Briefcase, Plus, X, Command, AlertTriangle, ShieldCheck, Download, Terminal, BarChart2, Lock, User, Key, ChevronRight, Home, Settings, Search, LogOut, ArrowUp } from 'lucide-react';
+import { Send, Activity, BrainCircuit, Globe, Loader2, Database, TrendingUp, Users, Target, Briefcase, Plus, X, Command, AlertTriangle, ShieldCheck, Download, Terminal, BarChart2, Lock, User, Key, ChevronRight, Home, Settings, Search, LogOut, ArrowUp, Sun, Moon } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend } from 'recharts';
 import './index.css';
 
@@ -39,6 +39,7 @@ const CompanyLogo = ({ name, size = 24 }) => {
 };
 
 function App() {
+  const [theme, setTheme] = useState('dark');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authEmail, setAuthEmail] = useState('');
   const [authPass, setAuthPass] = useState('');
@@ -58,6 +59,9 @@ function App() {
   const logsEndRef = useRef(null);
 
   useEffect(() => {
+    const savedTheme = localStorage.getItem('marketwatch_theme');
+    if (savedTheme) setTheme(savedTheme);
+
     const savedAuth = localStorage.getItem('marketwatch_isLoggedIn');
     if (savedAuth) setIsLoggedIn(true);
 
@@ -255,9 +259,15 @@ function App() {
     );
   };
 
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('marketwatch_theme', newTheme);
+  };
+
   if (!isLoggedIn) {
     return (
-      <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div data-theme={theme} style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)' }}>
         <div className="animate-slide-up finance-panel" style={{ width: '400px' }}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
             <div style={{ background: 'rgba(0, 230, 118, 0.1)', padding: '15px', borderRadius: '16px', border: '1px solid rgba(0, 230, 118, 0.3)' }}>
@@ -302,7 +312,7 @@ function App() {
 
   if (!isOnboarded) {
     return (
-      <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div data-theme={theme} style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)' }}>
         <div className="animate-slide-up finance-panel" style={{ width: '400px' }}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
             <div style={{ background: 'rgba(0, 230, 118, 0.1)', padding: '15px', borderRadius: '16px', border: '1px solid rgba(0, 230, 118, 0.3)' }}>
@@ -330,7 +340,7 @@ function App() {
   }
 
   return (
-    <div className="dashboard-layout">
+    <div className="dashboard-layout" data-theme={theme}>
       {/* Sidebar */}
       <div className="sidebar">
         <div className="sidebar-logo">
@@ -354,6 +364,10 @@ function App() {
         <div className="sidebar-menu-title" style={{ marginTop: '30px' }}>Account</div>
         <div className="sidebar-item"><Users size={16} /> Messages</div>
         <div className="sidebar-item"><Settings size={16} /> Settings</div>
+        
+        <div className="sidebar-item" onClick={toggleTheme} style={{ marginTop: '15px' }}>
+          {theme === 'dark' ? <><Sun size={16} /> Light Mode</> : <><Moon size={16} /> Dark Mode</>}
+        </div>
         
         <div style={{ marginTop: 'auto' }}>
            <div style={{ background: 'rgba(0, 230, 118, 0.1)', padding: '15px', borderRadius: '8px', border: '1px solid rgba(0, 230, 118, 0.2)', fontSize: '12px' }}>
