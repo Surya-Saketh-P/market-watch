@@ -317,6 +317,7 @@ function App() {
       }
     } catch (err) {
       console.error(err);
+      alert('Failed to connect to the MarketWatch AI Backend. Please ensure the Python server is running.');
     } finally {
       clearInterval(statusInterval);
       setLoading(false);
