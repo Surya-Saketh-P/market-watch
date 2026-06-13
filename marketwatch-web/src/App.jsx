@@ -487,11 +487,11 @@ function App() {
                </h3>
                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                  {[
-                   { name: 'QuickCommerce API', status: 'Live API', color: 'var(--accent-green)' },
-                   { name: 'QuickCommerceMap', status: '4,081 Nodes', color: 'var(--accent-orange)' },
-                   { name: 'ProductDataScrape', status: 'Hourly Sync', color: 'var(--accent-green)' },
-                   { name: 'Statista Forecast', status: 'Verified', color: '#38bdf8' },
-                   { name: 'QuickCompare.ai', status: 'Live', color: 'var(--accent-green)' }
+                   { name: 'IGuazio Retail Data', status: '39K+ Rows', color: 'var(--accent-green)' },
+                   { name: 'Olist E-Commerce', status: '100K+ Orders', color: 'var(--accent-orange)' },
+                   { name: 'Food Data Scrape', status: 'Real-Time', color: 'var(--accent-green)' },
+                   { name: 'Statista', status: 'Market Forecast', color: '#38bdf8' },
+                   { name: 'USDA GAIN', status: 'Govt. Intel', color: 'var(--accent-green)' }
                  ].map((src, idx) => (
                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#1a1d26', padding: '12px 14px', borderRadius: '8px', border: '1px solid var(--panel-border)' }}>
                      <div style={{ color: 'var(--text-main)', fontSize: '13px', fontWeight: '500' }}>{src.name}</div>
