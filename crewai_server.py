@@ -362,8 +362,8 @@ def analyze_market_data(request: AnalysisRequest):
     )
 
     task_strategy = Task(
-        description=f'Read the live reports from Marketing, Product, and Sales gathered today ({datetime.now().strftime("%B %d, %Y")}). Synthesize into a Daily Executive Brief. Do not use placeholder or simulated data.',
-        expected_output='A professional Daily Executive Brief formatted in Markdown based exclusively on real fetched data from today.',
+        description=f'Read the live reports from Marketing, Product, and Sales gathered today ({datetime.now().strftime("%B %d, %Y")}). Synthesize into a MASSIVE, Highly-Detailed Daily Executive Brief. Break down EXACT metrics, exact numbers fetched from the live tools, actionable timelines, and deep-dive analysis. Do not use placeholder or simulated data.',
+        expected_output='A professional, extremely detailed and lengthy Daily Executive Brief formatted in Markdown based exclusively on exact real fetched data from today.',
         agent=strategy_agent
     )
 
@@ -373,9 +373,9 @@ def analyze_market_data(request: AnalysisRequest):
         - "threat_level": A string, either "Low", "Moderate", or "Critical".
         - "sector_analysis": A JSON object mapping each company name (including {request.user_company}) to its primary business sector. If a company is gibberish or doesn't exist, output "Fake Company". (e.g. {{"Blinkit": "Quick Commerce", "TCS": "IT Services", "asdf": "Fake Company"}}).
         - "radar_data": A JSON array representing 5 axes (Innovation, Pricing, Marketing, Product Velocity, Customer Sentiment) comparing {request.user_company} to competitors. The array MUST contain objects with EXACTLY these keys: "subject" (string), "A" (integer score 0-100 for {request.user_company}), and "B" (integer score 0-100 for Competitor Avg).
-        - "marketing_graph": An array of objects for a BarChart comparing "Ad Spend Efficiency" between {request.user_company} and each competitor. Keys: "name" and "score".
-        - "product_graph": An array of objects for a BarChart representing "Dark Store Network Strength" between {request.user_company} and each competitor. Keys: "name" and "score".
-        - "sales_graph": An array of objects for a BarChart representing "Lead Conversion Probability" between {request.user_company} and each competitor. Keys: "name" and "score".
+        - "marketing_graph": An array of objects for a BarChart comparing "Ad Spend Efficiency". You MUST include exactly {len(request.competitors) + 1} objects (one for {request.user_company} and one for each competitor). Keys: "name" and "score".
+        - "product_graph": An array of objects for a BarChart representing "Dark Store Network Strength". You MUST include exactly {len(request.competitors) + 1} objects (one for {request.user_company} and one for each competitor). Keys: "name" and "score".
+        - "sales_graph": An array of objects for a BarChart representing "Lead Conversion Probability". You MUST include exactly {len(request.competitors) + 1} objects (one for {request.user_company} and one for each competitor). Keys: "name" and "score".
         
         DO NOT include markdown. Just JSON.
         ''',
