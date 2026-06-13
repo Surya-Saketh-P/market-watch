@@ -46,6 +46,7 @@ function App() {
   const [competitors, setCompetitors] = useState(['Blinkit', 'Zepto']);
   const [compInput, setCompInput] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [isValidating, setIsValidating] = useState(false);
   
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
@@ -85,29 +86,20 @@ function App() {
     }, 800);
   };
 
-  const validCompanies = [
-    // E-Commerce / Quick Commerce
-    "blinkit", "zepto", "swiggy", "instamart", "dunzo", "bigbasket", "bbnow", "bb now",
-    "flipkart", "amazon", "jiomart", "tata neu", "tataneu", "meesho", "nykaa", "myntra",
-    "ajio", "firstcry", "lenskart", "snapdeal", "shopclues", "indiamart", "udaan",
-    "shiprocket", "delhivery", "xpressbees", "ecom express", "zomato", "grofers", "amazon fresh",
-    // Other Sectors (to trigger the sector badge)
-    "tcs", "infosys", "wipro", "hcl", "tech mahindra", "reliance", "hdfc", "sbi", "icici", 
-    "axis", "airtel", "jio", "paytm", "phonepe", "cred", "zerodha", "groww", "upstox"
-  ];
-
-  const isValidCompany = (name) => {
-    const comp = name.toLowerCase().trim();
-    return validCompanies.some(v => comp.includes(v) || v.includes(comp));
-  };
-
-  const handleOnboard = (e) => {
+  const handleOnboard = async (e) => {
     e.preventDefault();
     if (!userCompany.trim()) return;
     
-    if (!isValidCompany(userCompany)) {
-      setErrorMsg('Fake or Unrecognized Company. Please enter a real company.');
-      return;
+    setErrorMsg('Validating company...');
+    try {
+        const res = await fetch(`http://localhost:8000/validate?name=${encodeURIComponent(userCompany)}`);
+        const data = await res.json();
+        if (!data.valid) {
+            setErrorMsg('Fake or Unrecognized Company. Please enter a real company.');
+            return;
+        }
+    } catch (err) {
+        // Fall open if backend is unreachable
     }
     
     setErrorMsg('');
@@ -258,16 +250,23 @@ function App() {
                  className="finance-input" 
                  style={{ width: '250px', background: 'var(--panel-bg)', borderRadius: '20px', padding: '8px 16px' }}
                />
-               <button onClick={() => { 
+               <button onClick={async () => { 
                  if(compInput) { 
-                   if (!isValidCompany(compInput)) {
-                      alert("Fake or Unrecognized Company! Please enter a real company.");
-                      return;
-                   }
+                   setIsValidating(true);
+                   try {
+                       const res = await fetch(`http://localhost:8000/validate?name=${encodeURIComponent(compInput)}`);
+                       const data = await res.json();
+                       if (!data.valid) {
+                          alert("Fake or Unrecognized Company! Please enter a real company.");
+                          setIsValidating(false);
+                          return;
+                       }
+                   } catch (err) {}
                    setCompetitors([...competitors, compInput]); 
                    setCompInput(''); 
+                   setIsValidating(false);
                  } 
-               }} className="finance-btn" style={{ borderRadius: '20px', padding: '8px 16px' }}>Add Target</button>
+               }} className="finance-btn" style={{ borderRadius: '20px', padding: '8px 16px', opacity: isValidating ? 0.7 : 1 }}>{isValidating ? 'Verifying...' : 'Add Target'}</button>
                <button onClick={handleDispatch} className="finance-btn" style={{ borderRadius: '20px', padding: '8px 16px', background: 'var(--text-main)', color: 'var(--panel-bg)' }}>{loading ? 'Scanning...' : 'Analyze'}</button>
             </div>
         </div>
