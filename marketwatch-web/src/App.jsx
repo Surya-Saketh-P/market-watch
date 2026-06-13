@@ -51,6 +51,8 @@ function App() {
   const [lastScanned, setLastScanned] = useState(null);
   
   const [agentStatus, setAgentStatus] = useState('');
+  const [liveDataPoints, setLiveDataPoints] = useState(0);
+  const [liveSources, setLiveSources] = useState([]);
   const [showAllSources, setShowAllSources] = useState(false);
 
   // New state to manage the active sidebar view
@@ -112,6 +114,28 @@ function App() {
        if (step < statuses.length) setAgentStatus(statuses[step]);
     }, 3000);
 
+    const dataInterval = setInterval(() => {
+       setLiveDataPoints(prev => prev + Math.floor(Math.random() * 80) + 15);
+    }, 150);
+
+    const expectedSources = [
+       "SerperDev Google Search API",
+       "ScrapeWebsite Tool (Shoplytics)",
+       "QuickCommerce Store API",
+       "FakeStore Inventory API",
+       "Statista Market Research"
+    ];
+    let sourceStep = 0;
+    const sourceInterval = setInterval(() => {
+       if (sourceStep < expectedSources.length) {
+         setLiveSources(prev => {
+            if(prev.includes(expectedSources[sourceStep])) return prev;
+            return [...prev, expectedSources[sourceStep]];
+         });
+         sourceStep++;
+       }
+    }, 2000);
+
     try {
       const res = await fetch('http://localhost:8000/analyze', {
         method: 'POST',
@@ -126,6 +150,8 @@ function App() {
       console.error(err);
     } finally {
       clearInterval(statusInterval);
+      clearInterval(dataInterval);
+      clearInterval(sourceInterval);
       setLoading(false);
       setAgentStatus('');
     }
@@ -253,8 +279,8 @@ function App() {
                <div className="bankio-panel" style={{ padding: '30px', display: 'flex', flexDirection: 'column' }}>
                   <span className="metric-title">Data Points Processed</span>
                   <div className="metric-value-row">
-                    <span className="metric-value">{loading ? '0' : getDataPoints()}</span>
-                    <div className="pill green" style={{ marginLeft: 'auto' }}><Database size={12} /> {loading ? 'Calculating...' : 'Real-Time Volume'}</div>
+                    <span className="metric-value">{loading ? liveDataPoints.toLocaleString() : getDataPoints()}</span>
+                    <div className="pill green" style={{ marginLeft: 'auto' }}><Database size={12} /> Real-Time Volume</div>
                   </div>
                </div>
 
@@ -316,7 +342,13 @@ function App() {
                      )}
                   </h3>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                     {loading && <div style={{ padding: '8px 12px', color: 'var(--text-muted)', fontSize: '13px' }}>Awaiting uplinks...</div>}
+                     {loading && liveSources.map((source, idx) => (
+                        <div key={idx} className="animate-slide-up" style={{ padding: '8px 12px', background: 'var(--input-bg)', border: '1px solid var(--panel-border)', borderRadius: '8px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                           <Database size={14} color="var(--accent-green)" /> {source}
+                        </div>
+                     ))}
+                     {loading && liveSources.length < 5 && <div style={{ padding: '8px 12px', color: 'var(--text-muted)', fontSize: '13px' }}>Establishing uplinks...</div>}
+                     
                      {!loading && data?.sources && (showAllSources ? data.sources : data.sources.slice(0, 3)).map((source, idx) => (
                         <div key={idx} className="animate-slide-up" style={{ padding: '8px 12px', background: 'var(--input-bg)', border: '1px solid var(--panel-border)', borderRadius: '8px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                            <Database size={14} color="var(--accent-green)" /> {source}
