@@ -85,9 +85,30 @@ function App() {
     }, 800);
   };
 
+  const validCompanies = [
+    // E-Commerce / Quick Commerce
+    "blinkit", "zepto", "swiggy", "instamart", "dunzo", "bigbasket", "bbnow", "bb now",
+    "flipkart", "amazon", "jiomart", "tata neu", "tataneu", "meesho", "nykaa", "myntra",
+    "ajio", "firstcry", "lenskart", "snapdeal", "shopclues", "indiamart", "udaan",
+    "shiprocket", "delhivery", "xpressbees", "ecom express", "zomato", "grofers", "amazon fresh",
+    // Other Sectors (to trigger the sector badge)
+    "tcs", "infosys", "wipro", "hcl", "tech mahindra", "reliance", "hdfc", "sbi", "icici", 
+    "axis", "airtel", "jio", "paytm", "phonepe", "cred", "zerodha", "groww", "upstox"
+  ];
+
+  const isValidCompany = (name) => {
+    const comp = name.toLowerCase().trim();
+    return validCompanies.some(v => comp.includes(v) || v.includes(comp));
+  };
+
   const handleOnboard = (e) => {
     e.preventDefault();
     if (!userCompany.trim()) return;
+    
+    if (!isValidCompany(userCompany)) {
+      setErrorMsg('Fake or Unrecognized Company. Please enter a real company.');
+      return;
+    }
     
     setErrorMsg('');
     localStorage.setItem('marketwatch_userCompany', userCompany.trim());
@@ -239,6 +260,10 @@ function App() {
                />
                <button onClick={() => { 
                  if(compInput) { 
+                   if (!isValidCompany(compInput)) {
+                      alert("Fake or Unrecognized Company! Please enter a real company.");
+                      return;
+                   }
                    setCompetitors([...competitors, compInput]); 
                    setCompInput(''); 
                  } 
