@@ -230,8 +230,6 @@ function App() {
              <div className="icon-btn" onClick={toggleTheme} title="Toggle Theme" style={{ cursor: 'pointer', background: theme === 'dark' ? 'rgba(255,145,0,0.1)' : '#f1f5f9', border: theme === 'dark' ? '1px solid var(--accent-orange)' : '1px solid #cbd5e1' }}>
                 {theme === 'dark' ? <Sun size={18} color="var(--accent-orange)" /> : <Moon size={18} color="#0f172a" />}
              </div>
-             <div className="icon-btn"><Search size={18} /></div>
-             <div className="icon-btn"><Mail size={18} /></div>
              <div className="icon-btn badge"><Bell size={18} /></div>
              <div className="avatar"></div>
            </div>
