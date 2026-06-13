@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from typing import Optional
 from crewai import Agent, Task, Crew, Process
 from crewai.tools import tool
 from duckduckgo_search import DDGS
@@ -164,13 +165,17 @@ llm_string = "openrouter/openai/gpt-4o-mini"
 class AnalysisRequest(BaseModel):
     user_company: str
     competitors: list[str]
+    local_data: Optional[str] = None
 
 @app.post("/analyze")
 def analyze_market_data(request: AnalysisRequest):
     comp_list = ", ".join(request.competitors)
     query_context = f"Our company is {request.user_company}. Our competitors are: {comp_list}."
+    
+    local_data_context = f"CRITICAL: The user has uploaded secure internal data for this analysis:\n{request.local_data}\nCross-reference this internal data with your public market findings to find actionable insights." if request.local_data else ""
 
-    knowledge_base = '''
+    knowledge_base = f'''
+    {local_data_context}
     TRAINING DATASETS AVAILABLE:
     1. IGuazio 11 Retail Datasets (39K+ rows, Grocery orders)
     2. Brazilian Olist Dataset (100K+ orders)

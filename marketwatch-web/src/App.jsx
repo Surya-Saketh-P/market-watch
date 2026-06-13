@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Search, Mail, Bell, Home, BarChart2, List, TrendingUp, RefreshCw, CreditCard, Gift, Shield, Settings, HelpCircle, ArrowUpRight, ArrowDownRight, Download, Eye, ChevronDown, Lock, ChevronRight, CheckCircle2, XCircle, Sun, Moon, Activity, Database, Target, BrainCircuit } from 'lucide-react';
+import { Search, Mail, Bell, Home, BarChart2, List, TrendingUp, RefreshCw, CreditCard, Gift, Shield, Settings, HelpCircle, ArrowUpRight, ArrowDownRight, Download, Eye, ChevronDown, Lock, ChevronRight, CheckCircle2, XCircle, Sun, Moon, Activity, Database, Target, BrainCircuit, UploadCloud, FileText } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend } from 'recharts';
 import './index.css';
 
@@ -47,8 +47,22 @@ function App() {
   const [compInput, setCompInput] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [isValidating, setIsValidating] = useState(false);
+  const [localData, setLocalData] = useState('');
+  const [localFileName, setLocalFileName] = useState('');
+  const fileInputRef = useRef(null);
   
   const [loading, setLoading] = useState(false);
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setLocalFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      setLocalData(evt.target.result);
+    };
+    reader.readAsText(file);
+  };
   const [data, setData] = useState(null);
   const [lastScanned, setLastScanned] = useState(null);
   
@@ -132,7 +146,7 @@ function App() {
       const res = await fetch('http://localhost:8000/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_company: userCompany, competitors: competitors })
+        body: JSON.stringify({ user_company: userCompany, competitors: competitors, local_data: localData || null })
       });
       if (res.ok) {
          setData(await res.json());
@@ -262,7 +276,17 @@ function App() {
                    setIsValidating(false);
                  } 
                }} className="finance-btn" style={{ borderRadius: '20px', padding: '8px 16px', opacity: isValidating ? 0.7 : 1 }}>{isValidating ? 'Verifying...' : 'Add Target'}</button>
-               <button onClick={handleDispatch} className="finance-btn" style={{ borderRadius: '20px', padding: '8px 16px', background: 'var(--text-main)', color: 'var(--panel-bg)' }}>{loading ? 'Scanning...' : 'Analyze'}</button>
+               
+               <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginLeft: '10px', background: 'var(--panel-bg)', padding: '4px 10px', borderRadius: '20px', border: '1px solid var(--panel-border)' }}>
+                 <input type="file" accept=".csv,.txt,.json" ref={fileInputRef} onChange={handleFileUpload} style={{ display: 'none' }} />
+                 <button onClick={() => fileInputRef.current.click()} style={{ background: 'transparent', border: 'none', color: 'var(--text-main)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', padding: '4px' }}>
+                   <UploadCloud size={16} color="var(--accent-green)" />
+                   <span style={{ fontSize: '13px' }}>{localFileName || 'Upload Internal Data'}</span>
+                 </button>
+                 {localFileName && <XCircle size={14} color="var(--accent-red)" style={{ cursor: 'pointer', marginLeft: '5px' }} onClick={() => { setLocalFileName(''); setLocalData(''); }} />}
+               </div>
+
+               <button onClick={handleDispatch} className="finance-btn" style={{ borderRadius: '20px', padding: '8px 16px', background: 'var(--text-main)', color: 'var(--panel-bg)', marginLeft: '10px' }}>{loading ? 'Scanning...' : 'Analyze'}</button>
             </div>
         </div>
 
