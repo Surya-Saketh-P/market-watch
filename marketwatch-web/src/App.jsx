@@ -209,21 +209,19 @@ function App() {
 
         {/* Metric Cards Row */}
         <div className="metrics-row">
-           <div className="bankio-panel" style={{ display: 'flex', justifyContent: 'space-between', padding: '30px' }}>
-              <div className="metric-box">
-                 <span className="metric-title">Data Points</span>
-                 <div className="metric-value-row">
-                   <span className="metric-value">{getDataPoints()}</span>
-                   <div className="pill green"><ArrowUpRight size={12} /> +6.5%</div>
-                 </div>
+           <div className="bankio-panel" style={{ padding: '30px', display: 'flex', flexDirection: 'column' }}>
+              <span className="metric-title">Tracked Targets</span>
+              <div className="metric-value-row">
+                <span className="metric-value">{competitors.length}</span>
+                <div className="pill green" style={{ marginLeft: 'auto' }}><Activity size={12} /> Live Nodes</div>
               </div>
-              <div style={{ width: '1px', background: 'var(--panel-border)', height: '100%' }}></div>
-              <div className="metric-box">
-                 <span className="metric-title">Tracked Targets</span>
-                 <div className="metric-value-row">
-                   <span className="metric-value">{competitors.length + 1}</span>
-                   <div className="pill red"><ArrowDownRight size={12} /> -1.2%</div>
-                 </div>
+           </div>
+
+           <div className="bankio-panel" style={{ padding: '30px', display: 'flex', flexDirection: 'column' }}>
+              <span className="metric-title">Data Points Processed</span>
+              <div className="metric-value-row">
+                <span className="metric-value">{getDataPoints()}</span>
+                <div className="pill green" style={{ marginLeft: 'auto' }}><Database size={12} /> Real-Time Volume</div>
               </div>
            </div>
 
@@ -232,19 +230,19 @@ function App() {
                  <span className="metric-title">Threat Level</span>
                  <div className="metric-value-row">
                    <span className="metric-value" style={{ color: data?.threat_level === 'Critical' ? 'var(--accent-red)' : 'var(--accent-green)' }}>
-                     {data ? data.threat_level : 'Scanning'}
+                     {data ? data.threat_level : 'Scanning...'}
                    </span>
                  </div>
               </div>
-              <div style={{ height: '80px', width: '200px' }}>
-                 {data?.marketing_graph && (
+              {data?.marketing_graph && (
+                <div style={{ height: '60px', width: '120px' }}>
                    <ResponsiveContainer width="100%" height="100%">
                      <AreaChart data={data.marketing_graph}>
                        <Area type="monotone" dataKey="score" stroke="var(--accent-green)" fill="var(--accent-green-light)" strokeWidth={2} />
                      </AreaChart>
                    </ResponsiveContainer>
-                 )}
-              </div>
+                </div>
+              )}
            </div>
         </div>
 
