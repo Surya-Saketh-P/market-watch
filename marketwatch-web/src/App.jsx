@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Search, Mail, Bell, Home, BarChart2, List, TrendingUp, RefreshCw, CreditCard, Gift, Shield, Settings, HelpCircle, ArrowUpRight, ArrowDownRight, Download, Eye, ChevronDown, Lock, ChevronRight, CheckCircle2, XCircle, Sun, Moon, Activity, Database, Target } from 'lucide-react';
-import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
+import { Search, Mail, Bell, Home, BarChart2, List, TrendingUp, RefreshCw, CreditCard, Gift, Shield, Settings, HelpCircle, ArrowUpRight, ArrowDownRight, Download, Eye, ChevronDown, Lock, ChevronRight, CheckCircle2, XCircle, Sun, Moon, Activity, Database, Target, BrainCircuit } from 'lucide-react';
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend } from 'recharts';
 import './index.css';
 
 const CompanyLogo = ({ name, size = 32 }) => {
@@ -39,7 +39,6 @@ const CompanyLogo = ({ name, size = 32 }) => {
 };
 
 function App() {
-  // Theme state: light is the default to match the Bankio image
   const [theme, setTheme] = useState('light');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isOnboarded, setIsOnboarded] = useState(false);
@@ -49,6 +48,9 @@ function App() {
   
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
+
+  // New state to manage the active sidebar view
+  const [activeView, setActiveView] = useState('dashboard');
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('marketwatch_theme');
@@ -137,11 +139,9 @@ function App() {
     );
   }
 
-
-
   return (
     <div className={`dashboard-layout theme-${theme}`}>
-      {/* Sidebar - EXACTLY matching Bankio */}
+      {/* Sidebar - Dynamically routing to agents */}
       <div className="sidebar">
         <div className="sidebar-logo">
            <Activity size={28} color="var(--accent-green)" />
@@ -149,9 +149,23 @@ function App() {
         </div>
 
         <div className="sidebar-menu-title">Main Menu</div>
-        <div className="sidebar-item"><Home size={18} /> Dashboard</div>
-        <div className="sidebar-item active"><BarChart2 size={18} /> Analytics</div>
-        <div className="sidebar-item"><List size={18} /> Intelligence Log</div>
+        <div className={`sidebar-item ${activeView === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveView('dashboard')}>
+          <Home size={18} /> Dashboard Overview
+        </div>
+        
+        <div className="sidebar-menu-title" style={{ marginTop: '20px' }}>AI Agents</div>
+        <div className={`sidebar-item ${activeView === 'strategy' ? 'active' : ''}`} onClick={() => setActiveView('strategy')}>
+          <BrainCircuit size={18} /> Strategy Agent
+        </div>
+        <div className={`sidebar-item ${activeView === 'marketing' ? 'active' : ''}`} onClick={() => setActiveView('marketing')}>
+          <TrendingUp size={18} /> Marketing Agent
+        </div>
+        <div className={`sidebar-item ${activeView === 'product' ? 'active' : ''}`} onClick={() => setActiveView('product')}>
+          <Target size={18} /> Product Agent
+        </div>
+        <div className={`sidebar-item ${activeView === 'sales' ? 'active' : ''}`} onClick={() => setActiveView('sales')}>
+          <CreditCard size={18} /> Sales Agent
+        </div>
 
         <div className="sidebar-menu-title" style={{ marginTop: '20px' }}>Others</div>
         <div className="sidebar-item"><Shield size={18} /> Security</div>
@@ -179,9 +193,11 @@ function App() {
            </div>
         </div>
 
-        {/* Dashboard Title & Actions */}
+        {/* Dashboard Actions */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-           <h2 style={{ margin: 0, fontSize: '20px' }}>Intelligence Activity Overview</h2>
+           <h2 style={{ margin: 0, fontSize: '20px' }}>
+             {activeView === 'dashboard' ? 'Intelligence Activity Overview' : `${activeView.charAt(0).toUpperCase() + activeView.slice(1)} Agent`}
+           </h2>
            <div style={{ display: 'flex', gap: '10px' }}>
               <input 
                 value={compInput} 
@@ -195,84 +211,143 @@ function App() {
            </div>
         </div>
 
-        {/* Metric Cards Row */}
-        <div className="metrics-row">
-           <div className="bankio-panel" style={{ padding: '30px', display: 'flex', flexDirection: 'column' }}>
-              <span className="metric-title">Tracked Targets</span>
-              <div className="metric-value-row">
-                <span className="metric-value">{competitors.length}</span>
-                <div className="pill green" style={{ marginLeft: 'auto' }}><Activity size={12} /> Live Nodes</div>
-              </div>
-           </div>
+        {/* --- ROUTER RENDER LOGIC --- */}
 
-           <div className="bankio-panel" style={{ padding: '30px', display: 'flex', flexDirection: 'column' }}>
-              <span className="metric-title">Data Points Processed</span>
-              <div className="metric-value-row">
-                <span className="metric-value">{getDataPoints()}</span>
-                <div className="pill green" style={{ marginLeft: 'auto' }}><Database size={12} /> Real-Time Volume</div>
-              </div>
-           </div>
+        {activeView === 'dashboard' && (
+          <>
+            {/* Metric Cards Row */}
+            <div className="metrics-row">
+               <div className="bankio-panel" style={{ padding: '30px', display: 'flex', flexDirection: 'column' }}>
+                  <span className="metric-title">Tracked Targets</span>
+                  <div className="metric-value-row">
+                    <span className="metric-value">{competitors.length}</span>
+                    <div className="pill green" style={{ marginLeft: 'auto' }}><Activity size={12} /> Live Nodes</div>
+                  </div>
+               </div>
 
-           <div className="bankio-panel" style={{ padding: '30px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                 <span className="metric-title">Threat Level</span>
-                 <div className="metric-value-row">
-                   <span className="metric-value" style={{ color: data?.threat_level === 'Critical' ? 'var(--accent-red)' : 'var(--accent-green)' }}>
-                     {data ? data.threat_level : 'Scanning...'}
-                   </span>
+               <div className="bankio-panel" style={{ padding: '30px', display: 'flex', flexDirection: 'column' }}>
+                  <span className="metric-title">Data Points Processed</span>
+                  <div className="metric-value-row">
+                    <span className="metric-value">{getDataPoints()}</span>
+                    <div className="pill green" style={{ marginLeft: 'auto' }}><Database size={12} /> Real-Time Volume</div>
+                  </div>
+               </div>
+
+               <div className="bankio-panel" style={{ padding: '30px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                     <span className="metric-title">Threat Level</span>
+                     <div className="metric-value-row">
+                       <span className="metric-value" style={{ color: data?.threat_level === 'Critical' ? 'var(--accent-red)' : 'var(--accent-green)' }}>
+                         {data ? data.threat_level : 'Scanning...'}
+                       </span>
+                     </div>
+                  </div>
+                  {data?.marketing_graph && (
+                    <div style={{ height: '60px', width: '120px' }}>
+                       <ResponsiveContainer width="100%" height="100%">
+                         <AreaChart data={data.marketing_graph}>
+                           <Area type="monotone" dataKey="score" stroke="var(--accent-green)" fill="var(--accent-green-light)" strokeWidth={2} />
+                         </AreaChart>
+                       </ResponsiveContainer>
+                    </div>
+                  )}
+               </div>
+            </div>
+
+            {/* Targets & Sources Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
+               <div className="bankio-panel">
+                  <h3 style={{ margin: '0 0 15px 0', fontSize: '16px' }}>Selected Targets</h3>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                     <div style={{ padding: '8px 12px', background: 'var(--sidebar-active-bg)', color: 'var(--sidebar-active-text)', border: '1px solid var(--panel-border)', borderRadius: '8px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
+                        <Target size={14} /> {userCompany} (Primary)
+                     </div>
+                     {competitors.map((comp, idx) => (
+                        <div key={idx} style={{ padding: '8px 12px', background: 'var(--input-bg)', border: '1px solid var(--panel-border)', borderRadius: '8px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                           <Target size={14} color="var(--accent-orange)" /> {comp}
+                           <XCircle 
+                              size={14} 
+                              color="var(--accent-red)" 
+                              style={{ cursor: 'pointer', marginLeft: '4px' }}
+                              onClick={() => {
+                                 if(window.confirm(`Are you sure you want to stop tracking ${comp}?`)) {
+                                    setCompetitors(competitors.filter((_, i) => i !== idx));
+                                 }
+                              }}
+                           />
+                        </div>
+                     ))}
+                  </div>
+               </div>
+
+               <div className="bankio-panel">
+                  <h3 style={{ margin: '0 0 15px 0', fontSize: '16px' }}>Intelligence Sources</h3>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                     {['Google Search', 'X (Twitter)', 'LinkedIn Analytics', 'Exa Network', 'NewsAPI', 'Wikipedia Data', 'Crunchbase'].map((source, idx) => (
+                        <div key={idx} style={{ padding: '8px 12px', background: 'var(--input-bg)', border: '1px solid var(--panel-border)', borderRadius: '8px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                           <Database size={14} color="var(--accent-green)" /> {source}
+                        </div>
+                     ))}
+                  </div>
+               </div>
+            </div>
+          </>
+        )}
+
+        {/* AGENT VIEWS */}
+        {activeView !== 'dashboard' && (
+          <div className="animate-slide-up" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            
+            {/* Agent Graph Panel */}
+            <div className="bankio-panel" style={{ height: '350px', padding: '30px' }}>
+               <h3 style={{ margin: '0 0 20px 0', fontSize: '16px', color: 'var(--text-main)' }}>Interactive Metric Analysis</h3>
+               {data ? (
+                 <div style={{ width: '100%', height: 'calc(100% - 40px)' }}>
+                   {activeView === 'strategy' ? (
+                     <ResponsiveContainer width="100%" height="100%">
+                        <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data.radar_data}>
+                          <PolarGrid stroke="var(--panel-border)" />
+                          <PolarAngleAxis dataKey="subject" stroke="var(--text-muted)" tick={{ fill: 'var(--text-muted)', fontSize: 12 }} />
+                          <PolarRadiusAxis stroke="var(--text-muted)" />
+                          <Radar name={userCompany} dataKey="A" stroke="var(--accent-green)" fill="var(--accent-green)" fillOpacity={0.5} />
+                          <Radar name="Competitor Avg" dataKey="B" stroke="var(--accent-orange)" fill="var(--accent-orange)" fillOpacity={0.5} />
+                          <Legend wrapperStyle={{ color: 'var(--text-main)' }} />
+                          <RechartsTooltip contentStyle={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--panel-border)' }} />
+                        </RadarChart>
+                     </ResponsiveContainer>
+                   ) : (
+                     <ResponsiveContainer width="100%" height="100%">
+                       <BarChart data={data[`${activeView}_graph`]} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                         <CartesianGrid strokeDasharray="3 3" stroke="var(--panel-border)" vertical={false} />
+                         <XAxis dataKey="name" stroke="var(--text-muted)" tick={{ fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+                         <YAxis stroke="var(--text-muted)" tick={{ fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+                         <RechartsTooltip cursor={{fill: 'var(--sidebar-hover)'}} contentStyle={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--panel-border)', borderRadius: '8px', color: 'var(--text-main)' }} />
+                         <Bar dataKey="score" fill="var(--accent-green)" radius={[4,4,0,0]} barSize={40} />
+                       </BarChart>
+                     </ResponsiveContainer>
+                   )}
                  </div>
-              </div>
-              {data?.marketing_graph && (
-                <div style={{ height: '60px', width: '120px' }}>
-                   <ResponsiveContainer width="100%" height="100%">
-                     <AreaChart data={data.marketing_graph}>
-                       <Area type="monotone" dataKey="score" stroke="var(--accent-green)" fill="var(--accent-green-light)" strokeWidth={2} />
-                     </AreaChart>
-                   </ResponsiveContainer>
-                </div>
+               ) : (
+                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
+                   Please click 'Analyze' to generate data for this agent.
+                 </div>
+               )}
+            </div>
+
+            {/* Agent Text Report Panel */}
+            <div className="bankio-panel" style={{ padding: '30px' }}>
+              <h3 style={{ margin: '0 0 20px 0', fontSize: '16px' }}>Intelligence Feed</h3>
+              {data ? (
+                 <div className="markdown-body" style={{ color: 'var(--text-main)', lineHeight: '1.7', fontSize: '14px' }}>
+                    <ReactMarkdown>{data[`${activeView}_data`]}</ReactMarkdown>
+                 </div>
+              ) : (
+                 <div style={{ color: 'var(--text-muted)' }}>Waiting for swarm intelligence...</div>
               )}
-           </div>
-        </div>
+            </div>
 
-        {/* Targets & Sources Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
-           <div className="bankio-panel">
-              <h3 style={{ margin: '0 0 15px 0', fontSize: '16px' }}>Selected Targets</h3>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                 <div style={{ padding: '8px 12px', background: 'var(--sidebar-active-bg)', color: 'var(--sidebar-active-text)', border: '1px solid var(--panel-border)', borderRadius: '8px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
-                    <Target size={14} /> {userCompany} (Primary)
-                 </div>
-                 {competitors.map((comp, idx) => (
-                    <div key={idx} style={{ padding: '8px 12px', background: 'var(--input-bg)', border: '1px solid var(--panel-border)', borderRadius: '8px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                       <Target size={14} color="var(--accent-orange)" /> {comp}
-                       <XCircle 
-                          size={14} 
-                          color="var(--accent-red)" 
-                          style={{ cursor: 'pointer', marginLeft: '4px' }}
-                          onClick={() => {
-                             if(window.confirm(`Are you sure you want to stop tracking ${comp}?`)) {
-                                setCompetitors(competitors.filter((_, i) => i !== idx));
-                             }
-                          }}
-                       />
-                    </div>
-                 ))}
-              </div>
-           </div>
-
-           <div className="bankio-panel">
-              <h3 style={{ margin: '0 0 15px 0', fontSize: '16px' }}>Intelligence Sources</h3>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                 {['Google Search', 'X (Twitter)', 'LinkedIn Analytics', 'Exa Network', 'NewsAPI', 'Wikipedia Data', 'Crunchbase'].map((source, idx) => (
-                    <div key={idx} style={{ padding: '8px 12px', background: 'var(--input-bg)', border: '1px solid var(--panel-border)', borderRadius: '8px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                       <Database size={14} color="var(--accent-green)" /> {source}
-                    </div>
-                 ))}
-              </div>
-           </div>
-        </div>
-
-
+          </div>
+        )}
 
       </div>
     </div>
