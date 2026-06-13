@@ -45,6 +45,7 @@ function App() {
   const [userCompany, setUserCompany] = useState('');
   const [competitors, setCompetitors] = useState(['Blinkit', 'Zepto']);
   const [compInput, setCompInput] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
   
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
@@ -84,9 +85,28 @@ function App() {
     }, 800);
   };
 
+  const validCompanies = [
+    "blinkit", "zepto", "swiggy", "instamart", "dunzo", "bigbasket", "bbnow", "bb now",
+    "flipkart", "amazon", "jiomart", "tata neu", "tataneu", "meesho", "nykaa", "myntra",
+    "ajio", "firstcry", "lenskart", "snapdeal", "shopclues", "indiamart", "udaan",
+    "shiprocket", "delhivery", "xpressbees", "ecom express", "zomato", "grofers", "amazon fresh"
+  ];
+
+  const isValidCompany = (name) => {
+    const comp = name.toLowerCase().trim();
+    return validCompanies.some(v => comp.includes(v) || v.includes(comp));
+  };
+
   const handleOnboard = (e) => {
     e.preventDefault();
     if (!userCompany.trim()) return;
+    
+    if (!isValidCompany(userCompany)) {
+      setErrorMsg('Invalid company. Please enter a verified Quick Commerce/E-Commerce brand.');
+      return;
+    }
+    
+    setErrorMsg('');
     localStorage.setItem('marketwatch_userCompany', userCompany.trim());
     setIsOnboarded(true);
   };
@@ -155,7 +175,10 @@ function App() {
                  <input type="password" placeholder="Password" className="finance-input" />
                </>
              ) : (
-               <input autoFocus value={userCompany} onChange={e => setUserCompany(e.target.value)} placeholder="Company Name" className="finance-input" />
+               <>
+                 <input autoFocus value={userCompany} onChange={e => setUserCompany(e.target.value)} placeholder="Company Name" className="finance-input" />
+                 {errorMsg && <div style={{ color: 'var(--accent-red)', fontSize: '12px', marginTop: '-10px', paddingLeft: '5px' }}>{errorMsg}</div>}
+               </>
              )}
              <button type="submit" className="finance-btn">{isLoggedIn ? 'Initialize' : 'Sign In'} <ChevronRight size={18} /></button>
            </form>
@@ -223,17 +246,26 @@ function App() {
            <h2 style={{ margin: 0, fontSize: '20px' }}>
              {activeView === 'dashboard' ? 'Intelligence Activity Overview' : `${activeView.charAt(0).toUpperCase() + activeView.slice(1)} Agent`}
            </h2>
-           <div style={{ display: 'flex', gap: '10px' }}>
-              <input 
-                value={compInput} 
-                onChange={e => setCompInput(e.target.value)} 
-                placeholder="Find competitors..." 
-                className="finance-input" 
-                style={{ width: '250px', background: 'var(--panel-bg)', borderRadius: '20px', padding: '8px 16px' }}
-              />
-              <button onClick={() => { if(compInput) { setCompetitors([...competitors, compInput]); setCompInput(''); } }} className="finance-btn" style={{ borderRadius: '20px', padding: '8px 16px' }}>Add Target</button>
-              <button onClick={handleDispatch} className="finance-btn" style={{ borderRadius: '20px', padding: '8px 16px', background: 'var(--text-main)', color: 'var(--panel-bg)' }}>{loading ? 'Scanning...' : 'Analyze'}</button>
-           </div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+               <input 
+                 value={compInput} 
+                 onChange={e => setCompInput(e.target.value)} 
+                 placeholder="Find competitors..." 
+                 className="finance-input" 
+                 style={{ width: '250px', background: 'var(--panel-bg)', borderRadius: '20px', padding: '8px 16px' }}
+               />
+               <button onClick={() => { 
+                 if(compInput) { 
+                   if (!isValidCompany(compInput)) {
+                      alert("Invalid company! Please enter a verified Quick Commerce/E-Commerce brand.");
+                      return;
+                   }
+                   setCompetitors([...competitors, compInput]); 
+                   setCompInput(''); 
+                 } 
+               }} className="finance-btn" style={{ borderRadius: '20px', padding: '8px 16px' }}>Add Target</button>
+               <button onClick={handleDispatch} className="finance-btn" style={{ borderRadius: '20px', padding: '8px 16px', background: 'var(--text-main)', color: 'var(--panel-bg)' }}>{loading ? 'Scanning...' : 'Analyze'}</button>
+            </div>
         </div>
 
         {/* --- ROUTER RENDER LOGIC --- */}
