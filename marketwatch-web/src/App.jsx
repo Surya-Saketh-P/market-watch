@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Search, Mail, Bell, Home, BarChart2, List, TrendingUp, RefreshCw, CreditCard, Gift, Shield, Settings, HelpCircle, ArrowUpRight, ArrowDownRight, Download, Eye, ChevronDown, Lock, ChevronRight, CheckCircle2, XCircle } from 'lucide-react';
+import { Search, Mail, Bell, Home, BarChart2, List, TrendingUp, RefreshCw, CreditCard, Gift, Shield, Settings, HelpCircle, ArrowUpRight, ArrowDownRight, Download, Eye, ChevronDown, Lock, ChevronRight, CheckCircle2, XCircle, Sun, Moon } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import './index.css';
 
@@ -167,7 +167,7 @@ function App() {
 
         <div className="sidebar-menu-title" style={{ marginTop: '20px' }}>Others</div>
         <div className="sidebar-item"><Shield size={18} /> Security</div>
-        <div className="sidebar-item" onClick={toggleTheme}><Settings size={18} /> Settings (Theme)</div>
+        <div className="sidebar-item"><Settings size={18} /> Settings</div>
         <div className="sidebar-item"><HelpCircle size={18} /> Support</div>
       </div>
 
@@ -181,6 +181,9 @@ function App() {
              <p>Effortlessly manage your intelligence targets with real-time insights</p>
            </div>
            <div className="header-actions">
+             <div className="icon-btn" onClick={toggleTheme} title="Toggle Theme" style={{ cursor: 'pointer', background: theme === 'dark' ? 'rgba(255,145,0,0.1)' : '#f1f5f9', border: theme === 'dark' ? '1px solid var(--accent-orange)' : '1px solid #cbd5e1' }}>
+                {theme === 'dark' ? <Sun size={18} color="var(--accent-orange)" /> : <Moon size={18} color="#0f172a" />}
+             </div>
              <div className="icon-btn"><Search size={18} /></div>
              <div className="icon-btn"><Mail size={18} /></div>
              <div className="icon-btn badge"><Bell size={18} /></div>
