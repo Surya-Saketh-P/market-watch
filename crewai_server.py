@@ -199,6 +199,14 @@ class MonitorRequest(BaseModel):
     user_company: str
     competitors: list[str]
 
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+class ChatRequest(BaseModel):
+    messages: list[ChatMessage]
+    context_data: dict
+
 @app.post("/live_monitor")
 def live_monitor_market(request: MonitorRequest):
     comp_list = ", ".join(request.competitors)
@@ -441,11 +449,18 @@ def analyze_market_data(request: AnalysisRequest):
     if "sales_graph" not in parsed_json:
         parsed_json["sales_graph"] = [{"name": e, "score": random.randint(40, 95)} for e in entities]
 
+    def strip_md(raw):
+        if not raw: return ""
+        s = str(raw).strip()
+        s = re.sub(r'^```(?:markdown)?\n?', '', s, flags=re.IGNORECASE)
+        s = re.sub(r'\n?```$', '', s)
+        return s.strip()
+
     return {
-        "strategy_data": str(task_strategy.output.raw) if hasattr(task_strategy, 'output') and hasattr(task_strategy.output, 'raw') else "Error generating strategy.",
-        "marketing_data": str(task_marketing.output.raw) if hasattr(task_marketing, 'output') and hasattr(task_marketing.output, 'raw') else "Error generating marketing.",
-        "product_data": str(task_product.output.raw) if hasattr(task_product, 'output') and hasattr(task_product.output, 'raw') else "Error generating product.",
-        "sales_data": str(task_sales.output.raw) if hasattr(task_sales, 'output') and hasattr(task_sales.output, 'raw') else "Error generating sales.",
+        "strategy_data": strip_md(task_strategy.output.raw if hasattr(task_strategy, 'output') and hasattr(task_strategy.output, 'raw') else "Error generating strategy."),
+        "marketing_data": strip_md(task_marketing.output.raw if hasattr(task_marketing, 'output') and hasattr(task_marketing.output, 'raw') else "Error generating marketing."),
+        "product_data": strip_md(task_product.output.raw if hasattr(task_product, 'output') and hasattr(task_product.output, 'raw') else "Error generating product."),
+        "sales_data": strip_md(task_sales.output.raw if hasattr(task_sales, 'output') and hasattr(task_sales.output, 'raw') else "Error generating sales."),
         "data_points": len(str(task_strategy.output.raw)) * 2 + len(str(task_marketing.output.raw)) * 3 + len(str(task_product.output.raw)),
         "sources": [
             "Crawl4AI Web Scraper",
@@ -458,6 +473,33 @@ def analyze_market_data(request: AnalysisRequest):
         ],
         **parsed_json
     }
+
+@app.post("/chat")
+def chat_with_agent(request: ChatRequest):
+    api_key = os.environ.get("OPENROUTER_API_KEY")
+    if not api_key:
+        return {"response": "Error: OpenRouter API key missing on server."}
+
+    system_prompt = "You are the MarketWatch AI Assistant. Use the provided intelligence context to answer the user's questions definitively. If the context doesn't contain the answer, say so, but always try to be helpful based on the data provided.\n\nContext:\n" + json.dumps(request.context_data)
+    
+    payload = {
+        "model": "openai/gpt-4o-mini",
+        "messages": [{"role": "system", "content": system_prompt}] + [{"role": m.role, "content": m.content} for m in request.messages]
+    }
+    
+    try:
+        res = requests.post("https://openrouter.ai/api/v1/chat/completions", headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }, json=payload, timeout=15)
+        
+        if res.status_code == 200:
+            data = res.json()
+            return {"response": data["choices"][0]["message"]["content"]}
+        else:
+            return {"response": f"API Error: {res.status_code}"}
+    except Exception as e:
+        return {"response": f"Server Error: {e}"}
 
 if __name__ == "__main__":
     import uvicorn

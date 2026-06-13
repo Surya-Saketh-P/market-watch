@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Search, Mail, Bell, Home, BarChart2, List, TrendingUp, RefreshCw, CreditCard, Gift, Shield, Settings, HelpCircle, ArrowUpRight, ArrowDownRight, Download, Eye, EyeOff, ChevronDown, Lock, ChevronRight, CheckCircle2, XCircle, Sun, Moon, Activity, Database, Target, BrainCircuit, UploadCloud, FileText, LogOut, History } from 'lucide-react';
+import { Search, Mail, Bell, Home, BarChart2, List, TrendingUp, RefreshCw, CreditCard, Gift, Shield, Settings, HelpCircle, ArrowUpRight, ArrowDownRight, Download, Eye, EyeOff, ChevronDown, Lock, ChevronRight, CheckCircle2, XCircle, Sun, Moon, Activity, Database, Target, BrainCircuit, UploadCloud, FileText, LogOut, History, MessageCircle, Send, X } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend } from 'recharts';
 import { auth, db } from './firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail, updateProfile } from 'firebase/auth';
@@ -98,6 +98,46 @@ function App() {
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  // Chatbot State
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState([{ role: 'assistant', content: 'Hi! I am your MarketWatch Copilot. Ask me anything about your competitors or the latest generated strategy.' }]);
+  const [chatInput, setChatInput] = useState('');
+  const [isChatLoading, setIsChatLoading] = useState(false);
+  const chatEndRef = useRef(null);
+
+  useEffect(() => {
+    if (isChatOpen && chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatMessages, isChatOpen]);
+
+  const handleChatSubmit = async (e) => {
+    e.preventDefault();
+    if (!chatInput.trim() || isChatLoading) return;
+    
+    const newMsg = { role: 'user', content: chatInput };
+    setChatMessages(prev => [...prev, newMsg]);
+    setChatInput('');
+    setIsChatLoading(true);
+
+    try {
+      const res = await fetch('http://localhost:8000/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+           messages: [...chatMessages, newMsg].slice(1), 
+           context_data: data || { note: "No intelligence data generated yet. Tell the user to run an analysis." }
+        })
+      });
+      const resData = await res.json();
+      setChatMessages(prev => [...prev, { role: 'assistant', content: resData.response }]);
+    } catch (error) {
+      setChatMessages(prev => [...prev, { role: 'assistant', content: "Error communicating with the backend API." }]);
+    } finally {
+      setIsChatLoading(false);
+    }
+  };
   const [displayNameInput, setDisplayNameInput] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoginMode, setIsLoginMode] = useState(true);
@@ -770,6 +810,55 @@ function App() {
              </div>
           </div>
         )}
+
+        {/* FLOATING CHATBOT UI */}
+        <div style={{ position: 'fixed', bottom: '30px', right: '30px', zIndex: 1000, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '15px' }}>
+          {isChatOpen && (
+             <div className="animate-slide-up" style={{ width: '350px', height: '450px', background: 'var(--panel-bg)', border: '1px solid var(--panel-border)', borderRadius: '12px', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
+                <div style={{ background: '#114b3e', padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--panel-border)' }}>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#fff', fontWeight: 'bold' }}>
+                      <BrainCircuit size={18} color="#22c55e" /> MarketWatch Copilot
+                   </div>
+                   <button onClick={() => setIsChatOpen(false)} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer' }}><X size={18} /></button>
+                </div>
+                <div style={{ flex: 1, padding: '15px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '15px', background: 'var(--bg-primary)' }}>
+                   {chatMessages.map((msg, idx) => (
+                      <div key={idx} style={{ alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '85%' }}>
+                         <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '5px', textAlign: msg.role === 'user' ? 'right' : 'left' }}>
+                            {msg.role === 'user' ? 'You' : 'Copilot'}
+                         </div>
+                         <div style={{ background: msg.role === 'user' ? 'var(--accent-green)' : 'var(--input-bg)', color: msg.role === 'user' ? '#fff' : 'var(--text-main)', padding: '10px 15px', borderRadius: '8px', border: msg.role === 'user' ? 'none' : '1px solid var(--panel-border)', fontSize: '13px', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
+                            {msg.content}
+                         </div>
+                      </div>
+                   ))}
+                   {isChatLoading && (
+                      <div style={{ alignSelf: 'flex-start', maxWidth: '85%' }}>
+                         <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '5px' }}>Copilot</div>
+                         <div style={{ background: 'var(--input-bg)', color: 'var(--text-muted)', padding: '10px 15px', borderRadius: '8px', border: '1px solid var(--panel-border)', fontSize: '13px' }}>
+                            <div className="spin-anim" style={{ display: 'inline-block', width: '12px', height: '12px', border: '2px solid var(--text-muted)', borderTopColor: 'transparent', borderRadius: '50%' }}></div> Thinking...
+                         </div>
+                      </div>
+                   )}
+                   <div ref={chatEndRef} />
+                </div>
+                <form onSubmit={handleChatSubmit} style={{ padding: '15px', background: 'var(--panel-bg)', borderTop: '1px solid var(--panel-border)', display: 'flex', gap: '10px' }}>
+                   <input value={chatInput} onChange={e => setChatInput(e.target.value)} placeholder="Ask about the strategy..." className="finance-input" style={{ flex: 1, padding: '10px 15px' }} />
+                   <button type="submit" disabled={isChatLoading || !chatInput.trim()} className="finance-btn" style={{ padding: '10px', background: (!chatInput.trim() || isChatLoading) ? '#333' : 'var(--accent-green)', opacity: (!chatInput.trim() || isChatLoading) ? 0.5 : 1 }}>
+                      <Send size={16} />
+                   </button>
+                </form>
+             </div>
+          )}
+          <button 
+             onClick={() => setIsChatOpen(!isChatOpen)}
+             style={{ width: '55px', height: '55px', borderRadius: '50%', background: 'var(--accent-green)', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 15px rgba(34, 197, 94, 0.4)', transition: 'transform 0.2s' }}
+             onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+             onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+          >
+             {isChatOpen ? <X size={24} /> : <MessageCircle size={24} />}
+          </button>
+        </div>
 
       </div>
     </div>
