@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Search, Mail, Bell, Home, BarChart2, List, TrendingUp, RefreshCw, CreditCard, Gift, Shield, Settings, HelpCircle, ArrowUpRight, ArrowDownRight, Download, Eye, ChevronDown, Lock, ChevronRight, CheckCircle2, XCircle, Sun, Moon, Activity, Database, Target, BrainCircuit, UploadCloud, FileText } from 'lucide-react';
+import { Search, Mail, Bell, Home, BarChart2, List, TrendingUp, RefreshCw, CreditCard, Gift, Shield, Settings, HelpCircle, ArrowUpRight, ArrowDownRight, Download, Eye, ChevronDown, Lock, ChevronRight, CheckCircle2, XCircle, Sun, Moon, Activity, Database, Target, BrainCircuit, UploadCloud, FileText, LogOut } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend } from 'recharts';
+import { auth, db } from './firebase';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import './index.css';
 
 const CompanyLogo = ({ name, size = 32 }) => {
@@ -69,21 +72,37 @@ function App() {
   const [agentStatus, setAgentStatus] = useState('');
   const [showAllSources, setShowAllSources] = useState(false);
 
-  // New state to manage the active sidebar view
   const [activeView, setActiveView] = useState('dashboard');
+  
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoginMode, setIsLoginMode] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('marketwatch_theme');
     if (savedTheme) setTheme(savedTheme);
 
-    const savedAuth = localStorage.getItem('marketwatch_isLoggedIn');
-    if (savedAuth) setIsLoggedIn(true);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setCurrentUser(user);
+        setIsLoggedIn(true);
+        // Fetch user company from Firestore
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists() && userDoc.data().company) {
+          setUserCompany(userDoc.data().company);
+          setIsOnboarded(true);
+        } else {
+          setIsOnboarded(false);
+        }
+      } else {
+        setCurrentUser(null);
+        setIsLoggedIn(false);
+        setIsOnboarded(false);
+      }
+    });
 
-    const savedCompany = localStorage.getItem('marketwatch_userCompany');
-    if (savedCompany) {
-      setUserCompany(savedCompany);
-      setIsOnboarded(true);
-    }
+    return () => unsubscribe();
   }, []);
 
   const toggleTheme = () => {
@@ -92,17 +111,23 @@ function App() {
     localStorage.setItem('marketwatch_theme', newTheme);
   };
 
-  const handleLogin = (e) => {
+  const handleAuth = async (e) => {
     e.preventDefault();
-    setTimeout(() => {
-      localStorage.setItem('marketwatch_isLoggedIn', 'true');
-      setIsLoggedIn(true);
-    }, 800);
+    setErrorMsg('');
+    try {
+      if (isLoginMode) {
+        await signInWithEmailAndPassword(auth, email, password);
+      } else {
+        await createUserWithEmailAndPassword(auth, email, password);
+      }
+    } catch (err) {
+      setErrorMsg(err.message);
+    }
   };
 
   const handleOnboard = async (e) => {
     e.preventDefault();
-    if (!userCompany.trim()) return;
+    if (!userCompany.trim() || !currentUser) return;
     
     setErrorMsg('Validating company...');
     try {
@@ -112,13 +137,22 @@ function App() {
             setErrorMsg('Fake or Unrecognized Company. Please enter a real company.');
             return;
         }
+        
+        // Save to Firestore
+        await setDoc(doc(db, "users", currentUser.uid), {
+          company: userCompany.trim()
+        }, { merge: true });
+        
     } catch (err) {
         // Fall open if backend is unreachable
     }
     
     setErrorMsg('');
-    localStorage.setItem('marketwatch_userCompany', userCompany.trim());
     setIsOnboarded(true);
+  };
+
+  const handleLogout = () => {
+    signOut(auth);
   };
 
   const handleDispatch = async () => {
@@ -178,19 +212,24 @@ function App() {
              {isLoggedIn ? 'Enter your primary company to begin.' : 'Authenticate to access the dashboard.'}
            </p>
            
-           <form onSubmit={isLoggedIn ? handleOnboard : handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+           <form onSubmit={isLoggedIn ? handleOnboard : handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
              {!isLoggedIn ? (
                <>
-                 <input autoFocus placeholder="Email Address" className="finance-input" />
-                 <input type="password" placeholder="Password" className="finance-input" />
+                 <input type="email" autoFocus value={email} onChange={e => setEmail(e.target.value)} placeholder="Email Address" className="finance-input" required />
+                 <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" className="finance-input" required />
+                 {errorMsg && <div style={{ color: 'var(--accent-red)', fontSize: '12px', marginTop: '-10px', paddingLeft: '5px' }}>{errorMsg}</div>}
+                 <button type="submit" className="finance-btn">{isLoginMode ? 'Sign In' : 'Sign Up'} <ChevronRight size={18} /></button>
+                 <div style={{ fontSize: '12px', color: 'var(--text-muted)', cursor: 'pointer', marginTop: '10px' }} onClick={() => setIsLoginMode(!isLoginMode)}>
+                   {isLoginMode ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
+                 </div>
                </>
              ) : (
                <>
-                 <input autoFocus value={userCompany} onChange={e => setUserCompany(e.target.value)} placeholder="Company Name" className="finance-input" />
+                 <input autoFocus value={userCompany} onChange={e => setUserCompany(e.target.value)} placeholder="Company Name" className="finance-input" required />
                  {errorMsg && <div style={{ color: 'var(--accent-red)', fontSize: '12px', marginTop: '-10px', paddingLeft: '5px' }}>{errorMsg}</div>}
+                 <button type="submit" className="finance-btn">Initialize <ChevronRight size={18} /></button>
                </>
              )}
-             <button type="submit" className="finance-btn">{isLoggedIn ? 'Initialize' : 'Sign In'} <ChevronRight size={18} /></button>
            </form>
         </div>
       </div>
@@ -225,6 +264,8 @@ function App() {
           <CreditCard size={18} /> Sales Agent
         </div>
 
+        <div className="sidebar-menu-title" style={{ marginTop: '20px' }}>Account</div>
+        <div className="sidebar-item" onClick={handleLogout} style={{ color: 'var(--accent-red)' }}><LogOut size={18} /> Sign Out</div>
 
       </div>
 
