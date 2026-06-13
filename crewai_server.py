@@ -13,6 +13,7 @@ import re
 import random
 import requests
 from bs4 import BeautifulSoup
+from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -326,8 +327,8 @@ def analyze_market_data(request: AnalysisRequest):
 
     strategy_agent = Agent(
         role='Chief Strategic Advisor AI',
-        goal='Synthesize findings into weekly briefs and actionable recommendations.',
-        backstory='You are a billionaire CEO advisor. You take reports from Marketing, Product, and Sales, and synthesize them into a brilliant executive brief. Reference the Statista $5.38B projection and QuickCommerceMap store counts!',
+        goal='Synthesize findings into highly accurate, real-time daily briefs and actionable recommendations based strictly on the live data provided by the other agents.',
+        backstory='You are a billionaire CEO advisor. You take reports from Marketing, Product, and Sales, and synthesize them into a brilliant daily executive brief. You MUST NOT invent or simulate data. Use ONLY the live facts, dates, and metrics fetched today.',
         verbose=True,
         allow_delegation=False,
         llm=llm_string
@@ -361,8 +362,8 @@ def analyze_market_data(request: AnalysisRequest):
     )
 
     task_strategy = Task(
-        description='Read the reports from Marketing, Product, and Sales. Synthesize into Executive Brief using the $5.38B Market forecast.',
-        expected_output='A professional Weekly Executive Brief formatted in Markdown.',
+        description=f'Read the live reports from Marketing, Product, and Sales gathered today ({datetime.now().strftime("%B %d, %Y")}). Synthesize into a Daily Executive Brief. Do not use placeholder or simulated data.',
+        expected_output='A professional Daily Executive Brief formatted in Markdown based exclusively on real fetched data from today.',
         agent=strategy_agent
     )
 
