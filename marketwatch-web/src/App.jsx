@@ -8,6 +8,8 @@ import { doc, setDoc, getDoc, collection, addDoc, getDocs, query, orderBy } from
 import html2pdf from 'html2pdf.js';
 import './index.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const CompanyLogo = ({ name, size = 32 }) => {
   const [src, setSrc] = useState(null);
 
@@ -15,7 +17,7 @@ const CompanyLogo = ({ name, size = 32 }) => {
     if (!name) return;
     let isMounted = true;
     
-    fetch(`http://localhost:8000/logo?name=${encodeURIComponent(name)}`)
+    fetch(`${API_BASE_URL}/logo?name=${encodeURIComponent(name)}`)
       .then(res => res.json())
       .then(data => {
         if (isMounted && data.url) setSrc(data.url);
@@ -122,7 +124,7 @@ function App() {
     setIsChatLoading(true);
 
     try {
-      const res = await fetch('http://localhost:8000/chat', {
+      const res = await fetch(`${API_BASE_URL}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -212,7 +214,7 @@ function App() {
 
   const checkLiveThreats = async () => {
     try {
-      const res = await fetch('http://localhost:8000/live_monitor', {
+      const res = await fetch(`${API_BASE_URL}/live_monitor`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_company: userCompany, competitors: competitors })
@@ -270,7 +272,7 @@ function App() {
     
     setErrorMsg('Validating company...');
     try {
-        const res = await fetch(`http://localhost:8000/validate?name=${encodeURIComponent(userCompany)}`);
+        const res = await fetch(`${API_BASE_URL}/validate?name=${encodeURIComponent(userCompany)}`);
         const data = await res.json();
         if (!data.valid) {
             setErrorMsg('Fake or Unrecognized Company. Please enter a real company.');
@@ -320,14 +322,14 @@ function App() {
     let eventSource;
     try {
       setTerminalLogs([`[${new Date().toLocaleTimeString()}] Establishing uplink...`]);
-      eventSource = new EventSource('http://localhost:8000/stream_logs');
+      eventSource = new EventSource(`${API_BASE_URL}/stream_logs`);
       eventSource.onmessage = (event) => {
           const timeStr = new Date().toLocaleTimeString();
           // Overwrite the array to only keep the latest line, satisfying the "disappear" requirement
           setTerminalLogs([`[${timeStr}] ${event.data}`]);
       };
 
-      const res = await fetch('http://localhost:8000/analyze', {
+      const res = await fetch(`${API_BASE_URL}/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_company: userCompany, competitors: competitors, local_data: localData || null })
@@ -530,7 +532,7 @@ function App() {
                  if(compInput) { 
                    setIsValidating(true);
                    try {
-                       const res = await fetch(`http://localhost:8000/validate?name=${encodeURIComponent(compInput)}`);
+                       const res = await fetch(`${API_BASE_URL}/validate?name=${encodeURIComponent(compInput)}`);
                        const data = await res.json();
                        if (!data.valid) {
                           alert("Fake or Unrecognized Company! Please enter a real company.");
