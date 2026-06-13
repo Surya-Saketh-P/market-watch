@@ -244,6 +244,34 @@ function App() {
            </div>
         </div>
 
+        {/* Targets & Sources Cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
+           <div className="bankio-panel">
+              <h3 style={{ margin: '0 0 15px 0', fontSize: '16px' }}>Selected Targets</h3>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                 <div style={{ padding: '8px 12px', background: 'var(--sidebar-active-bg)', color: 'var(--sidebar-active-text)', border: '1px solid var(--panel-border)', borderRadius: '8px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}>
+                    <Target size={14} /> {userCompany} (Primary)
+                 </div>
+                 {competitors.map((comp, idx) => (
+                    <div key={idx} style={{ padding: '8px 12px', background: 'var(--input-bg)', border: '1px solid var(--panel-border)', borderRadius: '8px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                       <Target size={14} color="var(--accent-orange)" /> {comp}
+                    </div>
+                 ))}
+              </div>
+           </div>
+
+           <div className="bankio-panel">
+              <h3 style={{ margin: '0 0 15px 0', fontSize: '16px' }}>Intelligence Sources</h3>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                 {['Google Search', 'X (Twitter)', 'LinkedIn Analytics', 'Exa Network', 'NewsAPI', 'Wikipedia Data', 'Crunchbase'].map((source, idx) => (
+                    <div key={idx} style={{ padding: '8px 12px', background: 'var(--input-bg)', border: '1px solid var(--panel-border)', borderRadius: '8px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                       <Database size={14} color="var(--accent-green)" /> {source}
+                    </div>
+                 ))}
+              </div>
+           </div>
+        </div>
+
         {/* Recent Transfer Activity / Intelligence Table */}
         <h3 style={{ fontSize: '16px', margin: '30px 0 10px 0' }}>Recent Intelligence Activity</h3>
         <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: '0 0 20px 0' }}>Track all your integrated datasets and APIs in one place, categorized for better financial insights.</p>
