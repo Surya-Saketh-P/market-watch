@@ -16,7 +16,7 @@
   --shadow: none;
 }
 
-[data-theme='light'] {
+:root[data-theme='light'], [data-theme='light'] {
   --bg-primary: #f4f7f6;
   --panel-bg: #ffffff;
   --panel-border: #e5e7eb;
@@ -37,6 +37,7 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-main);
   overflow: hidden; /* Full dashboard view */
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 * {
@@ -47,6 +48,9 @@ body {
   display: flex;
   height: 100vh;
   width: 100vw;
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Sidebar */
