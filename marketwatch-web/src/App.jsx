@@ -150,9 +150,7 @@ function App() {
       {/* Sidebar - EXACTLY matching Bankio */}
       <div className="sidebar">
         <div className="sidebar-logo">
-           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-             <path d="M4 6H14L10 12H20L16 18H6L10 12H0L4 6Z" fill="var(--accent-green)"/>
-           </svg>
+           <Activity size={28} color="var(--accent-green)" />
            MarketWatch
         </div>
 
