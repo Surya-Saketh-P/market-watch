@@ -151,11 +151,7 @@ function App() {
         <div className="sidebar-menu-title">Main Menu</div>
         <div className="sidebar-item"><Home size={18} /> Dashboard</div>
         <div className="sidebar-item active"><BarChart2 size={18} /> Analytics</div>
-        <div className="sidebar-item"><List size={18} /> Transactions</div>
-        <div className="sidebar-item"><TrendingUp size={18} /> Investments</div>
-        <div className="sidebar-item"><RefreshCw size={18} /> Transfers</div>
-        <div className="sidebar-item"><CreditCard size={18} /> Card</div>
-        <div className="sidebar-item"><Gift size={18} /> Rewards</div>
+        <div className="sidebar-item"><List size={18} /> Intelligence Log</div>
 
         <div className="sidebar-menu-title" style={{ marginTop: '20px' }}>Others</div>
         <div className="sidebar-item"><Shield size={18} /> Security</div>
