@@ -480,27 +480,27 @@ function App() {
 
           {/* Right Panel: Radar & Terminal */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
-             {/* Radar Chart */}
+             {/* Data Sources */}
              <div className="finance-panel">
-               <h3 style={{ margin: '0 0 15px 0', fontSize: '14px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Swarm Radar</h3>
-               <div style={{ height: '220px', position: 'relative' }}>
-                 {!data && (
-                   <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '12px' }}>No Data</div>
-                 )}
-                 {data && data.radar_data && (
-                   <ResponsiveContainer width="100%" height="100%">
-                     <RadarChart data={data.radar_data}>
-                       <PolarGrid stroke="var(--panel-border)" />
-                       <PolarAngleAxis dataKey="metric" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} />
-                       <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                       <RechartsTooltip contentStyle={{backgroundColor: 'var(--panel-bg)', border: '1px solid var(--panel-border)', borderRadius: '8px'}} />
-                       <Radar name={userCompany} dataKey={userCompany} stroke="var(--accent-green)" fill="var(--accent-green)" fillOpacity={0.4} />
-                       {competitors.map((comp, idx) => (
-                         <Radar key={comp} name={comp} dataKey={comp} stroke="var(--accent-orange)" fill="var(--accent-orange)" fillOpacity={0.3} />
-                       ))}
-                     </RadarChart>
-                   </ResponsiveContainer>
-                 )}
+               <h3 style={{ margin: '0 0 15px 0', fontSize: '14px', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                 <Database size={14} /> Intelligence Sources
+               </h3>
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                 {[
+                   { name: 'QuickCommerce API', status: 'Live API', color: 'var(--accent-green)' },
+                   { name: 'QuickCommerceMap', status: '4,081 Nodes', color: 'var(--accent-orange)' },
+                   { name: 'ProductDataScrape', status: 'Hourly Sync', color: 'var(--accent-green)' },
+                   { name: 'Statista Forecast', status: 'Verified', color: '#38bdf8' },
+                   { name: 'QuickCompare.ai', status: 'Live', color: 'var(--accent-green)' }
+                 ].map((src, idx) => (
+                   <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#1a1d26', padding: '12px 14px', borderRadius: '8px', border: '1px solid var(--panel-border)' }}>
+                     <div style={{ color: 'var(--text-main)', fontSize: '13px', fontWeight: '500' }}>{src.name}</div>
+                     <div style={{ color: src.color, fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                       <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: src.color, boxShadow: `0 0 8px ${src.color}` }}></div>
+                       {src.status}
+                     </div>
+                   </div>
+                 ))}
                </div>
              </div>
 
