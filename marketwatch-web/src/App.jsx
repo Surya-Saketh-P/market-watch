@@ -160,11 +160,23 @@ function App() {
         const data = await res.json();
         if (data.threat_detected) {
           setLiveThreats(prev => [{ id: Date.now(), ...data }, ...prev].slice(0, 3));
+          if (data.threat_level === 'High' && "Notification" in window && Notification.permission === "granted") {
+            new Notification("🚨 High Threat Detected", { body: data.message });
+          }
         }
       }
     } catch (err) {
       console.error("Monitor error:", err);
     }
+  };
+
+  const toggleLiveRadar = () => {
+    if (!isMonitoring) {
+      if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+        Notification.requestPermission();
+      }
+    }
+    setIsMonitoring(!isMonitoring);
   };
 
   const toggleTheme = () => {
@@ -442,7 +454,7 @@ function App() {
               {activeView === 'dashboard' ? 'Intelligence Activity Overview' : `${activeView.charAt(0).toUpperCase() + activeView.slice(1)} Agent`}
               {activeView === 'dashboard' && competitors.length > 0 && (
                  <button 
-                   onClick={() => setIsMonitoring(!isMonitoring)}
+                   onClick={toggleLiveRadar}
                    style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '4px 10px', borderRadius: '20px', background: isMonitoring ? 'rgba(34, 197, 94, 0.1)' : 'var(--input-bg)', border: `1px solid ${isMonitoring ? 'var(--accent-green)' : 'var(--panel-border)'}`, color: isMonitoring ? 'var(--accent-green)' : 'var(--text-muted)', cursor: 'pointer', outline: 'none', transition: 'all 0.2s ease' }}
                  >
                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: isMonitoring ? 'var(--accent-green)' : 'var(--text-muted)', boxShadow: isMonitoring ? '0 0 8px var(--accent-green)' : 'none', opacity: isMonitoring ? 1 : 0.5 }}></div>
