@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Search, Mail, Bell, Home, BarChart2, List, TrendingUp, RefreshCw, CreditCard, Gift, Shield, Settings, HelpCircle, ArrowUpRight, ArrowDownRight, Download, Eye, EyeOff, ChevronDown, Lock, ChevronRight, CheckCircle2, XCircle, Sun, Moon, Activity, Database, Target, BrainCircuit, UploadCloud, FileText, LogOut } from 'lucide-react';
+import { Search, Mail, Bell, Home, BarChart2, List, TrendingUp, RefreshCw, CreditCard, Gift, Shield, Settings, HelpCircle, ArrowUpRight, ArrowDownRight, Download, Eye, EyeOff, ChevronDown, Lock, ChevronRight, CheckCircle2, XCircle, Sun, Moon, Activity, Database, Target, BrainCircuit, UploadCloud, FileText, LogOut, History } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend } from 'recharts';
 import { auth, db } from './firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, collection, addDoc, getDocs, query, orderBy } from 'firebase/firestore';
+import html2pdf from 'html2pdf.js';
 import './index.css';
 
 const CompanyLogo = ({ name, size = 32 }) => {
@@ -79,6 +80,30 @@ function App() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
+  
+  const [historyData, setHistoryData] = useState([]);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(false);
+
+  useEffect(() => {
+    if (activeView === 'history' && currentUser) {
+      const fetchHistory = async () => {
+        setIsHistoryLoading(true);
+        try {
+          const q = query(collection(db, "users", currentUser.uid, "history"), orderBy("timestamp", "desc"));
+          const querySnapshot = await getDocs(q);
+          const hist = [];
+          querySnapshot.forEach((doc) => {
+            hist.push({ id: doc.id, ...doc.data() });
+          });
+          setHistoryData(hist);
+        } catch (err) {
+          console.error("Error fetching history:", err);
+        }
+        setIsHistoryLoading(false);
+      };
+      fetchHistory();
+    }
+  }, [activeView, currentUser]);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('marketwatch_theme');
@@ -184,8 +209,22 @@ function App() {
         body: JSON.stringify({ user_company: userCompany, competitors: competitors, local_data: localData || null })
       });
       if (res.ok) {
-         setData(await res.json());
+         const responseData = await res.json();
+         setData(responseData);
          setLastScanned(new Date().toLocaleString());
+         
+         if (currentUser) {
+            try {
+              await addDoc(collection(db, "users", currentUser.uid, "history"), {
+                 timestamp: new Date().toISOString(),
+                 user_company: userCompany,
+                 competitors: competitors,
+                 report: responseData
+              });
+            } catch (err) {
+              console.error("Failed to save history", err);
+            }
+         }
       }
     } catch (err) {
       console.error(err);
@@ -194,6 +233,21 @@ function App() {
       setLoading(false);
       setAgentStatus('');
     }
+  };
+
+  const downloadPDF = () => {
+    const element = document.getElementById('strategy-report-content');
+    if (!element) return;
+    
+    const opt = {
+      margin:       0.5,
+      filename:     `${userCompany}_Strategy_Report.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2 },
+      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+    
+    html2pdf().set(opt).from(element).save();
   };
 
   const getDataPoints = () => {
@@ -254,6 +308,9 @@ function App() {
         <div className="sidebar-menu-title">Main Menu</div>
         <div className={`sidebar-item ${activeView === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveView('dashboard')}>
           <Home size={18} /> Dashboard Overview
+        </div>
+        <div className={`sidebar-item ${activeView === 'history' ? 'active' : ''}`} onClick={() => setActiveView('history')}>
+          <History size={18} /> Analysis History
         </div>
         
         <div className="sidebar-menu-title" style={{ marginTop: '20px' }}>AI Agents</div>
@@ -449,13 +506,20 @@ function App() {
             
             {!loading && data && (
               <div className="bankio-panel animate-slide-up" style={{ padding: '30px' }}>
-                 <h3 style={{ margin: '0 0 15px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                   <BrainCircuit size={20} color="var(--accent-green)" /> Executive Strategy Brief
-                 </h3>
-                 <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: '0 0 20px 0' }}>
-                   Synthesized high-level overview generated by the Chief Strategic Advisor AI.
-                 </p>
-                 <div className="markdown-body" style={{ color: 'var(--text-main)', lineHeight: '1.7', fontSize: '14px' }}>
+                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                   <div>
+                     <h3 style={{ margin: '0 0 15px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                       <BrainCircuit size={20} color="var(--accent-green)" /> Executive Strategy Brief
+                     </h3>
+                     <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: '0 0 20px 0' }}>
+                       Synthesized high-level overview generated by the Chief Strategic Advisor AI.
+                     </p>
+                   </div>
+                   <button onClick={downloadPDF} className="finance-btn" style={{ padding: '6px 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                     <Download size={14} /> Download PDF
+                   </button>
+                 </div>
+                 <div id="strategy-report-content" className="markdown-body" style={{ color: 'var(--text-main)', lineHeight: '1.7', fontSize: '14px', padding: '20px', background: 'var(--bg-primary)', borderRadius: '8px', border: '1px solid var(--panel-border)' }}>
                     <ReactMarkdown>{data.strategy_data}</ReactMarkdown>
                  </div>
               </div>
@@ -515,6 +579,54 @@ function App() {
               )}
             </div>
 
+          </div>
+        )}
+
+        {/* HISTORY VIEW */}
+        {activeView === 'history' && (
+          <div className="animate-slide-up" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+             <div className="bankio-panel" style={{ padding: '30px' }}>
+                <h3 style={{ margin: '0 0 20px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <History size={20} color="var(--accent-green)" /> Previous Intelligence Reports
+                </h3>
+                
+                {isHistoryLoading ? (
+                  <div style={{ color: 'var(--text-muted)' }}>Fetching historical data...</div>
+                ) : historyData.length === 0 ? (
+                  <div style={{ color: 'var(--text-muted)' }}>No historical reports found. Run an analysis first!</div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    {historyData.map((hist) => (
+                      <div key={hist.id} style={{ padding: '20px', border: '1px solid var(--panel-border)', borderRadius: '12px', background: 'var(--input-bg)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                         <div>
+                            <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '5px' }}>
+                               {new Date(hist.timestamp).toLocaleString()}
+                            </div>
+                            <div style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--text-main)' }}>
+                               {hist.user_company} vs {hist.competitors?.join(', ') || 'None'}
+                            </div>
+                         </div>
+                         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <span style={{ fontSize: '13px', color: hist.report.threat_level === 'Critical' ? 'var(--accent-red)' : 'var(--accent-green)', marginRight: '15px', fontWeight: 'bold' }}>
+                               {hist.report.threat_level}
+                            </span>
+                            <button 
+                               onClick={() => {
+                                  setData(hist.report);
+                                  setCompetitors(hist.competitors || []);
+                                  setActiveView('dashboard');
+                               }} 
+                               className="finance-btn" 
+                               style={{ padding: '6px 12px', fontSize: '12px', background: 'transparent', border: '1px solid var(--accent-green)', color: 'var(--accent-green)' }}
+                            >
+                               Load Report
+                            </button>
+                         </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+             </div>
           </div>
         )}
 
