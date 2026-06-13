@@ -362,8 +362,8 @@ def analyze_market_data(request: AnalysisRequest):
     )
 
     task_strategy = Task(
-        description=f'Read the live reports from Marketing, Product, and Sales gathered today ({datetime.now().strftime("%B %d, %Y")}). Synthesize into a MASSIVE, Highly-Detailed Daily Executive Brief. Break down EXACT metrics, exact numbers fetched from the live tools, actionable timelines, and deep-dive analysis. Do not use placeholder or simulated data.',
-        expected_output='A professional, extremely detailed and lengthy Daily Executive Brief formatted in Markdown based exclusively on exact real fetched data from today.',
+        description=f'Read the live reports from Marketing, Product, and Sales gathered today ({datetime.now().strftime("%B %d, %Y")}). Synthesize them into a highly concise, punchy, and short Daily Executive Brief summary. Focus only on the most critical high-level insights. Do not output massive amounts of data.',
+        expected_output='A very short and summarized professional Daily Executive Brief formatted in Markdown.',
         agent=strategy_agent
     )
 
