@@ -211,10 +211,7 @@ function App() {
           <CreditCard size={18} /> Sales Agent
         </div>
 
-        <div className="sidebar-menu-title" style={{ marginTop: '20px' }}>Others</div>
-        <div className="sidebar-item"><Shield size={18} /> Security</div>
-        <div className="sidebar-item"><Settings size={18} /> Settings</div>
-        <div className="sidebar-item"><HelpCircle size={18} /> Support</div>
+
       </div>
 
       {/* Main Content Area */}
