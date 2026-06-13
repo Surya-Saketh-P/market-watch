@@ -48,9 +48,14 @@ function App() {
   
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
+  
+  const [agentStatus, setAgentStatus] = useState('');
+  const [liveDataPoints, setLiveDataPoints] = useState(0);
+  const [liveSources, setLiveSources] = useState([]);
 
   // New state to manage the active sidebar view
   const [activeView, setActiveView] = useState('dashboard');
+  const allSources = ['Google Search', 'X (Twitter)', 'LinkedIn Analytics', 'Exa Network', 'NewsAPI', 'Wikipedia Data', 'Crunchbase'];
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('marketwatch_theme');
@@ -90,6 +95,40 @@ function App() {
   const handleDispatch = async () => {
     if (!userCompany) return;
     setLoading(true);
+    setData(null);
+    setLiveDataPoints(0);
+    setLiveSources([]);
+    
+    const statuses = [
+      'Initializing Swarm Protocol...',
+      'Marketing Agent scanning web for competitor ad campaigns...',
+      'Product Agent fetching live dark store inventory nodes...',
+      'Sales Agent analyzing B2B buying signal velocity...',
+      'Data Scientist AI cross-referencing json intelligence...',
+      'Chief Strategic Advisor AI synthesizing final executive brief...'
+    ];
+    let step = 0;
+    setAgentStatus(statuses[0]);
+    const statusInterval = setInterval(() => {
+       step++;
+       if (step < statuses.length) setAgentStatus(statuses[step]);
+    }, 3000);
+
+    const dataInterval = setInterval(() => {
+       setLiveDataPoints(prev => prev + Math.floor(Math.random() * 80) + 20);
+    }, 80);
+
+    let sourceStep = 0;
+    const sourceInterval = setInterval(() => {
+       if (sourceStep < allSources.length) {
+         setLiveSources(prev => {
+            if(prev.includes(allSources[sourceStep])) return prev;
+            return [...prev, allSources[sourceStep]];
+         });
+         sourceStep++;
+       }
+    }, 1500);
+
     try {
       const res = await fetch('http://localhost:8000/analyze', {
         method: 'POST',
@@ -100,7 +139,12 @@ function App() {
     } catch (err) {
       console.error(err);
     } finally {
+      clearInterval(statusInterval);
+      clearInterval(dataInterval);
+      clearInterval(sourceInterval);
       setLoading(false);
+      setAgentStatus('');
+      setLiveSources(allSources);
     }
   };
 
@@ -228,8 +272,8 @@ function App() {
                <div className="bankio-panel" style={{ padding: '30px', display: 'flex', flexDirection: 'column' }}>
                   <span className="metric-title">Data Points Processed</span>
                   <div className="metric-value-row">
-                    <span className="metric-value">{getDataPoints()}</span>
-                    <div className="pill green" style={{ marginLeft: 'auto' }}><Database size={12} /> Real-Time Volume</div>
+                    <span className="metric-value">{loading ? liveDataPoints.toLocaleString() : getDataPoints()}</span>
+                    <div className="pill green" style={{ marginLeft: 'auto' }}><Database size={12} /> {loading ? 'Fetching...' : 'Real-Time Volume'}</div>
                   </div>
                </div>
 
@@ -283,17 +327,33 @@ function App() {
                <div className="bankio-panel">
                   <h3 style={{ margin: '0 0 15px 0', fontSize: '16px' }}>Intelligence Sources</h3>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                     {['Google Search', 'X (Twitter)', 'LinkedIn Analytics', 'Exa Network', 'NewsAPI', 'Wikipedia Data', 'Crunchbase'].map((source, idx) => (
-                        <div key={idx} style={{ padding: '8px 12px', background: 'var(--input-bg)', border: '1px solid var(--panel-border)', borderRadius: '8px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                     {(loading ? liveSources : allSources).map((source, idx) => (
+                        <div key={idx} className="animate-slide-up" style={{ padding: '8px 12px', background: 'var(--input-bg)', border: '1px solid var(--panel-border)', borderRadius: '8px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                            <Database size={14} color="var(--accent-green)" /> {source}
                         </div>
                      ))}
+                     {loading && <div style={{ padding: '8px 12px', color: 'var(--text-muted)', fontSize: '13px' }}>Establishing uplinks...</div>}
                   </div>
                </div>
             </div>
 
-            {/* Executive Brief (Only visible after analysis) */}
-            {data && (
+            {/* Live Agent Terminal / Executive Brief */}
+            {loading && (
+              <div className="bankio-panel animate-slide-up" style={{ padding: '30px', border: '1px solid var(--accent-green)', background: 'var(--sidebar-active-bg)' }}>
+                 <h3 style={{ margin: '0 0 15px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--accent-green)' }}>
+                   <RefreshCw size={20} className="spin-anim" /> Swarm Execution in Progress
+                 </h3>
+                 <p style={{ color: 'var(--sidebar-active-text)', fontSize: '15px', margin: '0', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                   <Activity size={16} /> {agentStatus}
+                 </p>
+                 <style dangerouslySetInnerHTML={{__html: `
+                    .spin-anim { animation: spin 2s linear infinite; }
+                    @keyframes spin { 100% { transform: rotate(360deg); } }
+                 `}} />
+              </div>
+            )}
+            
+            {!loading && data && (
               <div className="bankio-panel animate-slide-up" style={{ padding: '30px' }}>
                  <h3 style={{ margin: '0 0 15px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                    <BrainCircuit size={20} color="var(--accent-green)" /> Executive Strategy Brief
