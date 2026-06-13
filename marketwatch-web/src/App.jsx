@@ -345,9 +345,6 @@ function App() {
           <CreditCard size={18} /> Sales Agent
         </div>
 
-        <div className="sidebar-menu-title" style={{ marginTop: '20px' }}>Account</div>
-        <div className="sidebar-item" onClick={handleLogout} style={{ color: 'var(--accent-red)' }}><LogOut size={18} /> Sign Out</div>
-
       </div>
 
       {/* Main Content Area */}
