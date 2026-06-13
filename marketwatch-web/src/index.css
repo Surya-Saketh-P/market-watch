@@ -1,0 +1,183 @@
+:root {
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: dark;
+  color: #94a3b8;
+  background-color: #020617;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  min-height: 100vh;
+  background: radial-gradient(circle at center top, #0f172a 0%, #020617 100%);
+}
+
+#root {
+  width: 100%;
+  display: flex;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #020617;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #38bdf8;
+}
+
+/* Markdown styling - CYBER THEME */
+.prose h1 { color: #f8fafc; font-size: 24px; border-bottom: 1px solid #1e293b; padding-bottom: 8px; margin-top: 30px; font-weight: 700; }
+.prose h2 { color: #f8fafc; font-size: 20px; margin-top: 25px; font-weight: 700; }
+.prose h3 { color: #38bdf8; font-size: 14px; margin-top: 20px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700;}
+.prose p { margin-bottom: 15px; color: #94a3b8; line-height: 1.7; font-size: 15px; }
+.prose strong { color: #e2e8f0; font-weight: 700; }
+.prose ul { padding-left: 20px; margin-bottom: 15px; }
+.prose li { color: #94a3b8; margin-bottom: 8px; line-height: 1.6; font-size: 15px; }
+.prose a { color: #a855f7; text-decoration: none; }
+.prose a:hover { text-decoration: underline; }
+
+/* Micro-animations */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+}
+
+.glow-btn:hover:not(:disabled) {
+  animation: pulseGlow 1.5s infinite;
+}
+
+@keyframes terminalScroll {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-terminal {
+  animation: terminalScroll 0.3s ease-out forwards;
+}
+
+/* Cyber Buttons */
+.cyber-btn {
+  background: #0f172a;
+  color: #38bdf8;
+  border: 1px solid #1e293b;
+  padding: 12px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 12px;
+}
+
+.cyber-btn:hover:not(:disabled) {
+  background: #1e293b;
+  border-color: #38bdf8;
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+}
+
+.cyber-btn.primary {
+  background: #38bdf8;
+  color: #020617;
+  border: none;
+}
+.cyber-btn.primary:hover:not(:disabled) {
+  background: #7dd3fc;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+}
+
+.cyber-btn:disabled {
+  background: #0f172a;
+  border-color: #1e293b;
+  color: #475569;
+  cursor: not-allowed;
+}
+
+/* Input Fields */
+.cyber-input {
+  background: #020617;
+  border: 1px solid #1e293b;
+  color: #f8fafc;
+  padding: 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.cyber-input:focus {
+  border-color: #a855f7;
+  box-shadow: 0 0 0 1px #a855f7, 0 0 15px rgba(168, 85, 247, 0.2);
+}
+
+/* Tabs */
+.cyber-tab {
+  background: transparent;
+  color: #64748b;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 12px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-radius: 0;
+}
+
+.cyber-tab.active {
+  color: #38bdf8;
+  border-bottom: 2px solid #38bdf8;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+}
+
+.cyber-tab:hover:not(.active) {
+  color: #e2e8f0;
+}
+
+/* Containers */
+.cyber-panel {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid #1e293b;
+  backdrop-filter: blur(10px);
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.cyber-badge {
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  color: #d8b4fe;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
