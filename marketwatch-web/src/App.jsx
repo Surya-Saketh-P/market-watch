@@ -48,6 +48,7 @@ function App() {
   
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
+  const [lastScanned, setLastScanned] = useState(null);
   
   const [agentStatus, setAgentStatus] = useState('');
   const [liveDataPoints, setLiveDataPoints] = useState(0);
@@ -135,7 +136,10 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_company: userCompany, competitors: competitors })
       });
-      if (res.ok) setData(await res.json());
+      if (res.ok) {
+         setData(await res.json());
+         setLastScanned(new Date().toLocaleString());
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -281,10 +285,11 @@ function App() {
                   <div>
                      <span className="metric-title">Threat Level</span>
                      <div className="metric-value-row">
-                       <span className="metric-value" style={{ color: data?.threat_level === 'Critical' ? 'var(--accent-red)' : 'var(--accent-green)' }}>
-                         {data ? data.threat_level : 'Scanning...'}
+                       <span className="metric-value" style={{ color: data?.threat_level === 'Critical' ? 'var(--accent-red)' : (data ? 'var(--accent-green)' : 'var(--text-muted)') }}>
+                         {loading ? 'Scanning...' : (data ? data.threat_level : 'Idle')}
                        </span>
                      </div>
+                     {lastScanned && <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '5px' }}>Last Scan: {lastScanned}</div>}
                   </div>
                   {data?.marketing_graph && (
                     <div style={{ height: '60px', width: '120px' }}>
