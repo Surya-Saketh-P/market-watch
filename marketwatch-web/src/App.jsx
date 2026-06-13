@@ -90,7 +90,7 @@ function App() {
     if (lastScanned) localStorage.setItem('marketwatch_last_scanned', lastScanned);
   }, [lastScanned]);
 
-  const [agentStatus, setAgentStatus] = useState('');
+  const [loadingStep, setLoadingStep] = useState(0);
   const [showAllSources, setShowAllSources] = useState(false);
 
   const [activeView, setActiveView] = useState('dashboard');
@@ -285,10 +285,10 @@ function App() {
       'Chief Strategic Advisor AI synthesizing final executive brief...'
     ];
     let step = 0;
-    setAgentStatus(statuses[0]);
+    setLoadingStep(0);
     const statusInterval = setInterval(() => {
        step++;
-       if (step < statuses.length) setAgentStatus(statuses[step]);
+       if (step < statuses.length) setLoadingStep(step);
     }, 3000);
 
     try {
@@ -321,7 +321,7 @@ function App() {
     } finally {
       clearInterval(statusInterval);
       setLoading(false);
-      setAgentStatus('');
+      setLoadingStep(0);
     }
   };
 
@@ -618,13 +618,38 @@ function App() {
 
             {/* Live Agent Terminal / Executive Brief */}
             {loading && (
-              <div className="bankio-panel animate-slide-up" style={{ padding: '30px', border: '1px solid var(--accent-green)', background: 'var(--sidebar-active-bg)' }}>
-                 <h3 style={{ margin: '0 0 15px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--accent-green)' }}>
-                   <RefreshCw size={20} className="spin-anim" /> Swarm Execution in Progress
+              <div className="bankio-panel animate-slide-up" style={{ padding: '30px' }}>
+                 <h3 style={{ margin: '0 0 20px 0', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                   <RefreshCw size={20} className="spin-anim" color="var(--accent-green)" /> Swarm Execution in Progress
                  </h3>
-                 <p style={{ color: 'var(--sidebar-active-text)', fontSize: '15px', margin: '0', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                   <Activity size={16} /> {agentStatus}
-                 </p>
+                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                   {[
+                      'Initializing Swarm Protocol...',
+                      'Marketing Agent scanning web for competitor ad campaigns...',
+                      'Product Agent fetching live dark store inventory nodes...',
+                      'Sales Agent analyzing B2B buying signal velocity...',
+                      'Data Scientist AI cross-referencing json intelligence...',
+                      'Chief Strategic Advisor AI synthesizing final executive brief...'
+                   ].map((status, idx) => (
+                      <div key={idx} style={{ 
+                        display: 'flex', alignItems: 'center', gap: '15px', 
+                        opacity: idx <= loadingStep ? 1 : 0.3,
+                        color: idx === loadingStep ? 'var(--accent-green)' : 'var(--text-main)',
+                        transition: 'all 0.3s ease'
+                      }}>
+                         <div style={{ 
+                           width: '24px', height: '24px', borderRadius: '50%', 
+                           display: 'flex', alignItems: 'center', justifyContent: 'center',
+                           background: idx < loadingStep ? 'var(--accent-green)' : (idx === loadingStep ? 'transparent' : 'var(--input-bg)'),
+                           border: idx === loadingStep ? '2px solid var(--accent-green)' : '1px solid var(--panel-border)',
+                           color: idx < loadingStep ? '#fff' : 'var(--text-muted)'
+                         }}>
+                            {idx < loadingStep ? <CheckCircle2 size={14} color="#fff" /> : (idx === loadingStep ? <Activity size={12} color="var(--accent-green)" /> : idx + 1)}
+                         </div>
+                         <span style={{ fontSize: '14px', fontWeight: idx === loadingStep ? 'bold' : 'normal' }}>{status}</span>
+                      </div>
+                   ))}
+                 </div>
                  <style dangerouslySetInnerHTML={{__html: `
                     .spin-anim { animation: spin 2s linear infinite; }
                     @keyframes spin { 100% { transform: rotate(360deg); } }
