@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import { Search, Mail, Bell, Home, BarChart2, List, TrendingUp, RefreshCw, CreditCard, Gift, Shield, Settings, HelpCircle, ArrowUpRight, ArrowDownRight, Download, Eye, EyeOff, ChevronDown, Lock, ChevronRight, CheckCircle2, XCircle, Sun, Moon, Activity, Database, Target, BrainCircuit, UploadCloud, FileText, LogOut, History } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend } from 'recharts';
 import { auth, db } from './firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail } from 'firebase/auth';
 import { doc, setDoc, getDoc, collection, addDoc, getDocs, query, orderBy } from 'firebase/firestore';
 import html2pdf from 'html2pdf.js';
 import './index.css';
@@ -83,6 +83,7 @@ function App() {
   
   const [historyData, setHistoryData] = useState([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   useEffect(() => {
     if (activeView === 'history' && currentUser) {
@@ -178,7 +179,24 @@ function App() {
   };
 
   const handleLogout = () => {
-    signOut(auth);
+    if (window.confirm("Are you sure you want to sign out?")) {
+      signOut(auth);
+      setShowProfileMenu(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (currentUser && currentUser.email) {
+      if (window.confirm(`Send a password reset email to ${currentUser.email}?`)) {
+        try {
+          await sendPasswordResetEmail(auth, currentUser.email);
+          alert('Password reset email sent! Please check your inbox.');
+          setShowProfileMenu(false);
+        } catch (error) {
+          alert(`Error sending reset email: ${error.message}`);
+        }
+      }
+    }
   };
 
   const handleDispatch = async () => {
@@ -346,7 +364,22 @@ function App() {
                 {theme === 'dark' ? <Sun size={18} color="var(--accent-orange)" /> : <Moon size={18} color="#0f172a" />}
              </div>
              <div className="icon-btn badge"><Bell size={18} /></div>
-             <div className="avatar"></div>
+             <div style={{ position: 'relative' }}>
+               <div className="avatar" onClick={() => setShowProfileMenu(!showProfileMenu)} style={{ cursor: 'pointer' }}></div>
+               {showProfileMenu && (
+                 <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '10px', background: 'var(--panel-bg)', border: '1px solid var(--panel-border)', borderRadius: '8px', padding: '10px', display: 'flex', flexDirection: 'column', gap: '5px', zIndex: 100, minWidth: '150px', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}>
+                   <div style={{ padding: '8px 12px', fontSize: '12px', color: 'var(--text-muted)', borderBottom: '1px solid var(--panel-border)', marginBottom: '5px' }}>
+                     {currentUser?.email || 'User Profile'}
+                   </div>
+                   <div onClick={handleChangePassword} style={{ padding: '8px 12px', fontSize: '13px', cursor: 'pointer', color: 'var(--text-main)', borderRadius: '6px' }} onMouseOver={e => e.target.style.background='var(--sidebar-hover)'} onMouseOut={e => e.target.style.background='transparent'}>
+                     Change Password
+                   </div>
+                   <div onClick={handleLogout} style={{ padding: '8px 12px', fontSize: '13px', cursor: 'pointer', color: 'var(--accent-red)', borderRadius: '6px' }} onMouseOver={e => e.target.style.background='var(--sidebar-hover)'} onMouseOut={e => e.target.style.background='transparent'}>
+                     Sign Out
+                   </div>
+                 </div>
+               )}
+             </div>
            </div>
         </div>
 
