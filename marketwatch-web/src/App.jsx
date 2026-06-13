@@ -89,7 +89,6 @@ function App() {
   const [isMonitoring, setIsMonitoring] = useState(false);
   const [liveThreats, setLiveThreats] = useState([]);
   const monitorIntervalRef = useRef(null);
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   useEffect(() => {
     if (activeView === 'history' && currentUser) {
