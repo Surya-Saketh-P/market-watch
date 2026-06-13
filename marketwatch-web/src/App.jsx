@@ -137,13 +137,7 @@ function App() {
     );
   }
 
-  const transactionData = [
-    { date: 'Feb 13, 2026, 09:30 AM', name: 'IGuazio Retail Data', category: 'Retail Dataset', amount: '39,000 Nodes', status: 'Completed', logo: 'I' },
-    { date: 'Feb 12, 2026, 09:30 AM', name: 'Olist E-Commerce', category: 'Live API Sync', amount: '100,000 Rows', status: 'Completed', logo: 'O' },
-    { date: 'Feb 8, 2026, 09:30 AM', name: 'Food Data Scrape', category: 'Pricing Metrics', amount: 'Real-Time', status: 'Failed', logo: 'F' },
-    { date: 'Feb 4, 2026, 03:45 PM', name: 'Statista Forecast', category: 'Market Reports', amount: 'Verified', status: 'Completed', logo: 'S' },
-    { date: 'Feb 3, 2026, 11:10 AM', name: 'USDA GAIN', category: 'Govt Intel', amount: '2026 Baseline', status: 'Completed', logo: 'U' },
-  ];
+
 
   return (
     <div className={`dashboard-layout theme-${theme}`}>
@@ -255,6 +249,16 @@ function App() {
                  {competitors.map((comp, idx) => (
                     <div key={idx} style={{ padding: '8px 12px', background: 'var(--input-bg)', border: '1px solid var(--panel-border)', borderRadius: '8px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                        <Target size={14} color="var(--accent-orange)" /> {comp}
+                       <XCircle 
+                          size={14} 
+                          color="var(--accent-red)" 
+                          style={{ cursor: 'pointer', marginLeft: '4px' }}
+                          onClick={() => {
+                             if(window.confirm(`Are you sure you want to stop tracking ${comp}?`)) {
+                                setCompetitors(competitors.filter((_, i) => i !== idx));
+                             }
+                          }}
+                       />
                     </div>
                  ))}
               </div>
@@ -272,53 +276,7 @@ function App() {
            </div>
         </div>
 
-        {/* Recent Transfer Activity / Intelligence Table */}
-        <h3 style={{ fontSize: '16px', margin: '30px 0 10px 0' }}>Recent Intelligence Activity</h3>
-        <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: '0 0 20px 0' }}>Track all your integrated datasets and APIs in one place, categorized for better financial insights.</p>
 
-        <div className="bankio-panel" style={{ padding: 0, overflow: 'hidden' }}>
-          <table className="bankio-table">
-            <thead>
-              <tr>
-                <th>Date & Time</th>
-                <th>Description</th>
-                <th>Account</th>
-                <th>Category</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Export Data</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transactionData.map((row, i) => (
-                <tr key={i}>
-                  <td style={{ color: 'var(--text-muted)', fontSize: '12px' }}>{row.date.split(',')[0]}<br/>{row.date.split(',')[1]}</td>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#000', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>{row.logo}</div>
-                      <div>
-                        <div style={{ fontWeight: '600' }}>{row.name}</div>
-                        <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{row.name.split(' ')[0]}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td style={{ color: 'var(--text-muted)' }}>API Node<br/>(****{Math.floor(Math.random() * 9000)+1000})</td>
-                  <td>{row.category}</td>
-                  <td style={{ fontWeight: '600' }}>{row.amount}</td>
-                  <td style={{ color: row.status === 'Completed' ? 'var(--accent-green)' : 'var(--accent-red)', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px', height: '64px' }}>
-                    {row.status === 'Completed' ? <CheckCircle2 size={14} /> : <XCircle size={14} />} {row.status}
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <span style={{ fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}><Download size={10} /> PDF</span>
-                      <span style={{ fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}><Download size={10} /> CSV</span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
 
       </div>
     </div>
