@@ -647,8 +647,8 @@ function App() {
                    </button>
                  </div>
                  <div id="strategy-report-content" className="markdown-body" style={{ color: 'var(--text-main)', lineHeight: '1.7', fontSize: '14px', padding: '20px', background: 'var(--bg-primary)', borderRadius: '8px', border: '1px solid var(--panel-border)' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '15px', borderBottom: '1px solid var(--panel-border)', paddingBottom: '10px' }}>
-                      Report Generated: {new Date().toLocaleString()}
+                    <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '15px', borderBottom: '1px solid #cbd5e1', paddingBottom: '10px' }}>
+                      Report Generated: {lastScanned || new Date().toLocaleString()}
                     </div>
                     <ReactMarkdown>{data.strategy_data}</ReactMarkdown>
                  </div>
@@ -709,8 +709,8 @@ function App() {
               </div>
               {data ? (
                  <div id="agent-report-content" className="markdown-body" style={{ color: 'var(--text-main)', lineHeight: '1.7', fontSize: '14px', padding: '20px', background: 'var(--bg-primary)', borderRadius: '8px', border: '1px solid var(--panel-border)' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '15px', borderBottom: '1px solid var(--panel-border)', paddingBottom: '10px' }}>
-                      Report Generated: {new Date().toLocaleString()}
+                    <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '15px', borderBottom: '1px solid #cbd5e1', paddingBottom: '10px' }}>
+                      Report Generated: {lastScanned || new Date().toLocaleString()}
                     </div>
                     <ReactMarkdown>{data[`${activeView}_data`]}</ReactMarkdown>
                  </div>
