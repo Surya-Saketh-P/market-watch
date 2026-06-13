@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Send, Activity, BrainCircuit, Globe, Loader2, Database, TrendingUp, Users, Target, Briefcase, Plus, X, Command, AlertTriangle, ShieldCheck, Download, Terminal, BarChart2 } from 'lucide-react';
+import { Send, Activity, BrainCircuit, Globe, Loader2, Database, TrendingUp, Users, Target, Briefcase, Plus, X, Command, AlertTriangle, ShieldCheck, Download, Terminal, BarChart2, Lock, User, Key, ChevronRight } from 'lucide-react';
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell } from 'recharts';
 import './index.css';
 
@@ -42,6 +42,11 @@ const CompanyLogo = ({ name, size = 24 }) => {
 };
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPass, setAuthPass] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+
   const [userCompany, setUserCompany] = useState('');
   const [isOnboarded, setIsOnboarded] = useState(false);
   const [welcomeInput, setWelcomeInput] = useState('');
@@ -57,12 +62,26 @@ function App() {
   const logsEndRef = useRef(null);
 
   useEffect(() => {
+    const savedAuth = localStorage.getItem('marketwatch_isLoggedIn');
+    if (savedAuth) setIsLoggedIn(true);
+
     const saved = localStorage.getItem('marketwatch_userCompany');
     if (saved) {
       setUserCompany(saved);
       setIsOnboarded(true);
     }
   }, []);
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (!authEmail || !authPass) return;
+    setAuthLoading(true);
+    setTimeout(() => {
+      localStorage.setItem('marketwatch_isLoggedIn', 'true');
+      setIsLoggedIn(true);
+      setAuthLoading(false);
+    }, 1200);
+  };
 
   useEffect(() => {
     if (logsEndRef.current) {
@@ -212,6 +231,51 @@ function App() {
     );
   };
 
+  if (!isLoggedIn) {
+    return (
+      <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="animate-slide-up cyber-panel" style={{ width: '400px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+            <div style={{ background: 'rgba(168, 85, 247, 0.1)', padding: '15px', borderRadius: '16px', border: '1px solid rgba(168, 85, 247, 0.3)' }}>
+              <Lock color="#a855f7" size={40} />
+            </div>
+          </div>
+          <h1 style={{ textAlign: 'center', margin: '0 0 10px 0', fontSize: '24px', color: '#f8fafc', fontWeight: '800', letterSpacing: '1px' }}>RESTRICTED ACCESS</h1>
+          <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: '14px', marginBottom: '30px' }}>Authenticate to access MarketWatch Swarm Intelligence.</p>
+          
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <div style={{ position: 'relative' }}>
+              <User size={18} color="#64748b" style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)' }} />
+              <input 
+                autoFocus
+                type="email"
+                value={authEmail}
+                onChange={(e) => setAuthEmail(e.target.value)}
+                placeholder="Agent Email ID"
+                className="cyber-input"
+                style={{ paddingLeft: '45px' }}
+              />
+            </div>
+            <div style={{ position: 'relative' }}>
+              <Key size={18} color="#64748b" style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)' }} />
+              <input 
+                type="password"
+                value={authPass}
+                onChange={(e) => setAuthPass(e.target.value)}
+                placeholder="Passcode"
+                className="cyber-input"
+                style={{ paddingLeft: '45px' }}
+              />
+            </div>
+            <button type="submit" disabled={!authEmail || !authPass || authLoading} className="cyber-btn primary" style={{ padding: '14px', marginTop: '10px', display: 'flex', justifyContent: 'center', gap: '10px' }}>
+              {authLoading ? <Loader2 className="animate-spin" size={18} /> : <><ShieldCheck size={18} /> AUTHENTICATE</>}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   if (!isOnboarded) {
     return (
       <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -287,6 +351,9 @@ function App() {
           )}
           <button onClick={() => { localStorage.removeItem('marketwatch_userCompany'); setIsOnboarded(false); }} className="cyber-btn">
             Reset Target
+          </button>
+          <button onClick={() => { localStorage.removeItem('marketwatch_isLoggedIn'); setIsLoggedIn(false); setAuthEmail(''); setAuthPass(''); }} className="cyber-btn" style={{ color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.3)' }}>
+            Disconnect
           </button>
         </div>
       </header>
