@@ -47,7 +47,10 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isOnboarded, setIsOnboarded] = useState(false);
   const [userCompany, setUserCompany] = useState('');
-  const [competitors, setCompetitors] = useState([]);
+  const [competitors, setCompetitors] = useState(() => {
+    const saved = localStorage.getItem('marketwatch_competitors');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [compInput, setCompInput] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [isValidating, setIsValidating] = useState(false);
@@ -67,9 +70,26 @@ function App() {
     };
     reader.readAsText(file);
   };
-  const [data, setData] = useState(null);
-  const [lastScanned, setLastScanned] = useState(null);
+  const [data, setData] = useState(() => {
+    const saved = localStorage.getItem('marketwatch_data');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [lastScanned, setLastScanned] = useState(() => {
+    return localStorage.getItem('marketwatch_last_scanned') || null;
+  });
   
+  useEffect(() => {
+    localStorage.setItem('marketwatch_competitors', JSON.stringify(competitors));
+  }, [competitors]);
+
+  useEffect(() => {
+    if (data) localStorage.setItem('marketwatch_data', JSON.stringify(data));
+  }, [data]);
+
+  useEffect(() => {
+    if (lastScanned) localStorage.setItem('marketwatch_last_scanned', lastScanned);
+  }, [lastScanned]);
+
   const [agentStatus, setAgentStatus] = useState('');
   const [showAllSources, setShowAllSources] = useState(false);
 
