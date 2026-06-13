@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import { Search, Mail, Bell, Home, BarChart2, List, TrendingUp, RefreshCw, CreditCard, Gift, Shield, Settings, HelpCircle, ArrowUpRight, ArrowDownRight, Download, Eye, EyeOff, ChevronDown, Lock, ChevronRight, CheckCircle2, XCircle, Sun, Moon, Activity, Database, Target, BrainCircuit, UploadCloud, FileText, LogOut, History } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend } from 'recharts';
 import { auth, db } from './firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail, updateProfile } from 'firebase/auth';
 import { doc, setDoc, getDoc, collection, addDoc, getDocs, query, orderBy } from 'firebase/firestore';
 import html2pdf from 'html2pdf.js';
 import './index.css';
@@ -77,6 +77,7 @@ function App() {
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [displayNameInput, setDisplayNameInput] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
@@ -145,7 +146,11 @@ function App() {
       if (isLoginMode) {
         await signInWithEmailAndPassword(auth, email, password);
       } else {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        if (displayNameInput) {
+          await updateProfile(userCredential.user, { displayName: displayNameInput });
+          setCurrentUser({ ...userCredential.user, displayName: displayNameInput });
+        }
       }
     } catch (err) {
       setErrorMsg(err.message);
@@ -288,7 +293,10 @@ function App() {
            <form onSubmit={isLoggedIn ? handleOnboard : handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
              {!isLoggedIn ? (
                <>
-                 <input type="email" autoFocus value={email} onChange={e => setEmail(e.target.value)} placeholder="Email Address" className="finance-input" required />
+                 {!isLoginMode && (
+                   <input type="text" autoFocus value={displayNameInput} onChange={e => setDisplayNameInput(e.target.value)} placeholder="Username" className="finance-input" required />
+                 )}
+                 <input type="email" autoFocus={isLoginMode} value={email} onChange={e => setEmail(e.target.value)} placeholder="Email Address" className="finance-input" required />
                  <div style={{ position: 'relative', width: '100%' }}>
                    <input type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" className="finance-input" style={{ width: '100%', paddingRight: '40px', boxSizing: 'border-box' }} required />
                    <div style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }} onClick={() => setShowPassword(!showPassword)}>
@@ -353,7 +361,7 @@ function App() {
         {/* Top Header */}
         <div className="top-header">
            <div className="header-text">
-             <h1>Welcome, {currentUser?.email ? currentUser.email.split('@')[0].charAt(0).toUpperCase() + currentUser.email.split('@')[0].slice(1) : 'Agent'}!</h1>
+             <h1>Welcome, {currentUser?.displayName ? currentUser.displayName : (currentUser?.email ? currentUser.email.split('@')[0].charAt(0).toUpperCase() + currentUser.email.split('@')[0].slice(1) : 'Agent')}!</h1>
              <p>Effortlessly manage your intelligence targets with real-time insights</p>
            </div>
            <div className="header-actions">
@@ -366,7 +374,7 @@ function App() {
                {showProfileMenu && (
                  <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '10px', background: 'var(--panel-bg)', border: '1px solid var(--panel-border)', borderRadius: '8px', padding: '10px', display: 'flex', flexDirection: 'column', gap: '5px', zIndex: 100, minWidth: '150px', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}>
                    <div style={{ padding: '8px 12px', fontSize: '12px', color: 'var(--text-muted)', borderBottom: '1px solid var(--panel-border)', marginBottom: '5px' }}>
-                     {currentUser?.email || 'User Profile'}
+                     {currentUser?.displayName ? `${currentUser.displayName} (${currentUser.email})` : (currentUser?.email || 'User Profile')}
                    </div>
                    <div onClick={handleChangePassword} style={{ padding: '8px 12px', fontSize: '13px', cursor: 'pointer', color: 'var(--text-main)', borderRadius: '6px' }} onMouseOver={e => e.target.style.background='var(--sidebar-hover)'} onMouseOut={e => e.target.style.background='transparent'}>
                      Change Password
