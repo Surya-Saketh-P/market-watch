@@ -51,12 +51,10 @@ function App() {
   const [lastScanned, setLastScanned] = useState(null);
   
   const [agentStatus, setAgentStatus] = useState('');
-  const [liveDataPoints, setLiveDataPoints] = useState(0);
-  const [liveSources, setLiveSources] = useState([]);
+  const [showAllSources, setShowAllSources] = useState(false);
 
   // New state to manage the active sidebar view
   const [activeView, setActiveView] = useState('dashboard');
-  const allSources = ['Google Search', 'X (Twitter)', 'LinkedIn Analytics', 'Exa Network', 'NewsAPI', 'Wikipedia Data', 'Crunchbase'];
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('marketwatch_theme');
@@ -97,8 +95,7 @@ function App() {
     if (!userCompany) return;
     setLoading(true);
     setData(null);
-    setLiveDataPoints(0);
-    setLiveSources([]);
+    setShowAllSources(false);
     
     const statuses = [
       'Initializing Swarm Protocol...',
@@ -115,21 +112,6 @@ function App() {
        if (step < statuses.length) setAgentStatus(statuses[step]);
     }, 3000);
 
-    const dataInterval = setInterval(() => {
-       setLiveDataPoints(prev => prev + Math.floor(Math.random() * 80) + 20);
-    }, 80);
-
-    let sourceStep = 0;
-    const sourceInterval = setInterval(() => {
-       if (sourceStep < allSources.length) {
-         setLiveSources(prev => {
-            if(prev.includes(allSources[sourceStep])) return prev;
-            return [...prev, allSources[sourceStep]];
-         });
-         sourceStep++;
-       }
-    }, 1500);
-
     try {
       const res = await fetch('http://localhost:8000/analyze', {
         method: 'POST',
@@ -144,19 +126,14 @@ function App() {
       console.error(err);
     } finally {
       clearInterval(statusInterval);
-      clearInterval(dataInterval);
-      clearInterval(sourceInterval);
       setLoading(false);
       setAgentStatus('');
-      setLiveSources(allSources);
     }
   };
 
   const getDataPoints = () => {
     if (!data) return "0";
-    const contentSize = (data.strategy_data?.length || 0) + (data.marketing_data?.length || 0);
-    const metric = Math.floor(contentSize * 4.2) + (competitors.length * 2500) + 1429;
-    return metric.toLocaleString();
+    return data.data_points ? data.data_points.toLocaleString() : "0";
   };
 
   if (!isLoggedIn || !isOnboarded) {
@@ -276,8 +253,8 @@ function App() {
                <div className="bankio-panel" style={{ padding: '30px', display: 'flex', flexDirection: 'column' }}>
                   <span className="metric-title">Data Points Processed</span>
                   <div className="metric-value-row">
-                    <span className="metric-value">{loading ? liveDataPoints.toLocaleString() : getDataPoints()}</span>
-                    <div className="pill green" style={{ marginLeft: 'auto' }}><Database size={12} /> {loading ? 'Fetching...' : 'Real-Time Volume'}</div>
+                    <span className="metric-value">{loading ? '0' : getDataPoints()}</span>
+                    <div className="pill green" style={{ marginLeft: 'auto' }}><Database size={12} /> {loading ? 'Calculating...' : 'Real-Time Volume'}</div>
                   </div>
                </div>
 
@@ -330,14 +307,22 @@ function App() {
                </div>
 
                <div className="bankio-panel">
-                  <h3 style={{ margin: '0 0 15px 0', fontSize: '16px' }}>Intelligence Sources</h3>
+                  <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                     Intelligence Sources
+                     {data?.sources?.length > 3 && (
+                        <span onClick={() => setShowAllSources(!showAllSources)} style={{ fontSize: '12px', color: 'var(--accent-green)', cursor: 'pointer', fontWeight: 'normal' }}>
+                           {showAllSources ? 'Show Less' : `+${data.sources.length - 3} More`}
+                        </span>
+                     )}
+                  </h3>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                     {(loading ? liveSources : allSources).map((source, idx) => (
+                     {loading && <div style={{ padding: '8px 12px', color: 'var(--text-muted)', fontSize: '13px' }}>Awaiting uplinks...</div>}
+                     {!loading && data?.sources && (showAllSources ? data.sources : data.sources.slice(0, 3)).map((source, idx) => (
                         <div key={idx} className="animate-slide-up" style={{ padding: '8px 12px', background: 'var(--input-bg)', border: '1px solid var(--panel-border)', borderRadius: '8px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                            <Database size={14} color="var(--accent-green)" /> {source}
                         </div>
                      ))}
-                     {loading && <div style={{ padding: '8px 12px', color: 'var(--text-muted)', fontSize: '13px' }}>Establishing uplinks...</div>}
+                     {!loading && !data && <div style={{ padding: '8px 12px', color: 'var(--text-muted)', fontSize: '13px' }}>Run analysis to discover sources</div>}
                   </div>
                </div>
             </div>
